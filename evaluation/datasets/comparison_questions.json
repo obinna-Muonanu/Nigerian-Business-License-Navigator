@@ -1,0 +1,29 @@
+{
+  "description": "The key experiment: 15 questions run on BOTH the vector-only baseline and the GraphRAG navigator. Each case pre-loads the user's profile (and completed steps) into memory, so the question is answered in one turn. Gold answers: for 'lookup', the expected section text; for 'multi_step' and 'progress', the ordered plan computed from the hand-reviewed graph.",
+  "profiles": {
+    "zobo_ibadan": {"business_type": "DRINKS", "state": "Oyo", "legal_structure": "sole_proprietorship", "cac_registered": false, "sells_online": false, "collects_personal_data": false, "product_variant": "make_locally"},
+    "zobo_ibadan_online": {"business_type": "DRINKS", "state": "Oyo", "legal_structure": "sole_proprietorship", "cac_registered": false, "sells_online": true, "collects_personal_data": true, "product_variant": "make_locally"},
+    "pharmacy_lagos": {"business_type": "PHARM", "state": "Lagos", "legal_structure": "partnership", "cac_registered": false, "sells_online": false, "collects_personal_data": true},
+    "cosmetics_online_lagos": {"business_type": "COSM", "state": "Lagos", "legal_structure": "private_company", "cac_registered": false, "sells_online": true, "collects_personal_data": true, "product_variant": "import"},
+    "furniture_ogun": {"business_type": "FURN", "state": "Ogun", "legal_structure": "sole_proprietorship", "cac_registered": false, "sells_online": false, "collects_personal_data": false, "product_variant": "make_locally"}
+  },
+  "questions": [
+    {"id": "cmp-L1", "category": "lookup", "profile": "zobo_ibadan", "question": "What is the CAC registration fee for a business name?", "expected_sections": [["DOC01", "Requirement: Business name registration — sole proprietorship"]]},
+    {"id": "cmp-L2", "category": "lookup", "profile": "zobo_ibadan", "question": "What documents does NAFDAC need for product registration of my drink?", "expected_sections": [["DOC03", "Requirement: NAFDAC product registration"]]},
+    {"id": "cmp-L3", "category": "lookup", "profile": "pharmacy_lagos", "question": "What are the PCN siting rules for my pharmacy premises?", "expected_sections": [["DOC05", "Requirement: Premises meet PCN siting and structure standards"]]},
+    {"id": "cmp-L4", "category": "lookup", "profile": "cosmetics_online_lagos", "question": "What must my website's privacy notice contain?", "expected_sections": [["DOC06", "Requirement: Publish a privacy policy, privacy notice and cookie notice"]]},
+    {"id": "cmp-L5", "category": "lookup", "profile": "furniture_ogun", "question": "How do I apply for the SON MANCAP certificate?", "expected_sections": [["DOC07", "Requirement: MANCAP application"]]},
+
+    {"id": "cmp-M1", "category": "multi_step", "profile": "zobo_ibadan", "question": "I want to start selling packaged zobo drinks in Ibadan. What do I need, and in what order?"},
+    {"id": "cmp-M2", "category": "multi_step", "profile": "pharmacy_lagos", "question": "What registrations and approvals do I need to open my pharmacy in Lagos, in order?"},
+    {"id": "cmp-M3", "category": "multi_step", "profile": "cosmetics_online_lagos", "question": "I import my own cosmetics brand and sell online. List everything I need in the right order."},
+    {"id": "cmp-M4", "category": "multi_step", "profile": "furniture_ogun", "question": "What must I do, step by step, to run my furniture workshop legally in Ogun State?"},
+    {"id": "cmp-M5", "category": "multi_step", "profile": "zobo_ibadan_online", "question": "I sell zobo online and keep customers' phone numbers. What do I need, and what comes first?"},
+
+    {"id": "cmp-P1", "category": "progress", "profile": "zobo_ibadan", "done": ["R01-SP"], "question": "I have finished my business registration. What is left, in order?"},
+    {"id": "cmp-P2", "category": "progress", "profile": "zobo_ibadan", "done": ["R01-SP", "R02", "D01", "D02"], "question": "I have done CAC, my Tax ID, the facility setup and the staff medical tests. What next?"},
+    {"id": "cmp-P3", "category": "progress", "profile": "pharmacy_lagos", "done": ["R01-PT", "P01", "P02", "P03"], "question": "CAC is done, my superintendent pharmacist is licensed and the premises meet the standards. What remains?"},
+    {"id": "cmp-P4", "category": "progress", "profile": "cosmetics_online_lagos", "done": ["R01-LTD", "T01", "T02"], "question": "I registered the company and filed my trademark. What is left?"},
+    {"id": "cmp-P5", "category": "progress", "profile": "furniture_ogun", "done": ["R01-SP", "S01"], "question": "I registered my business name and confirmed my product needs MANCAP. What should I do now?"}
+  ]
+}

@@ -1,0 +1,7 @@
+# Streamlit theme for the License Navigator UI. Streamlit reads this file from the folder you run
+# `streamlit run` in, so start the UI from the project root.
+
+[theme]
+# Brand green (the same green as the logo). Streamlit uses the primary colour for primary buttons
+# such as "New chat", the open chat in the sidebar, toggles and links. Its default is a pinkish red.
+primaryColor = "#0B7A4B"

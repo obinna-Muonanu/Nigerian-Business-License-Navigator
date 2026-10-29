@@ -1,0 +1,17 @@
+# Secrets and local environment
+.env
+.venv/
+.claude/
+
+# Runtime state (recreated by the app)
+data/runtime/
+sessions/
+logs/
+
+# Generated during ingestion (keep reviewed.json under version control)
+data/graph/extracted.json
+data/graph/embeddings_cache.json
+
+# Python
+__pycache__/
+*.pyc

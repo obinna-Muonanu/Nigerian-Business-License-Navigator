@@ -1,0 +1,2644 @@
+{
+  "generated_at": "2026-10-27T13:53:18+00:00",
+  "model": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "documents": [
+    {
+      "doc_id": "DOC01",
+      "requirements": [
+        {
+          "id": "R01",
+          "name": "CAC business registration",
+          "regulator": "CAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "R01-SP",
+          "name": "Business name registration — sole proprietorship",
+          "regulator": "CAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "structure_sole"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "structure_sole"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "structure_sole"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "structure_sole"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": "R01",
+          "documents": [
+            "Valid means of identification: NIN is recommended; an international passport, driver's licence or voter's card is also accepted (colour scan)",
+            "Passport photograph",
+            "Signature on a plain white background"
+          ],
+          "applicant_information": [
+            "Two proposed business names, in order of preference",
+            "Nature of the business",
+            "Proprietor's full name",
+            "Proprietor's residential address (not a P.O. box)",
+            "Proprietor's nationality",
+            "Proprietor's date of birth",
+            "Proprietor's gender",
+            "Proprietor's email address",
+            "Proprietor's phone number",
+            "Business address (a home address is acceptable if the business runs from home)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "R01-PT",
+          "name": "Business name registration — partnership",
+          "regulator": "CAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "structure_partnership"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "structure_partnership"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "structure_partnership"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "structure_partnership"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": "R01",
+          "documents": [
+            "For each partner: valid means of identification (colour scan)",
+            "For each partner: passport photograph",
+            "For each partner: signature",
+            "Partnership agreement: recommended, but not always required"
+          ],
+          "applicant_information": [
+            "Two proposed business names, in order of preference",
+            "Nature of the business",
+            "For each partner: full name",
+            "For each partner: residential address (not a P.O. box)",
+            "For each partner: nationality",
+            "For each partner: date of birth",
+            "For each partner: gender",
+            "For each partner: email address",
+            "For each partner: phone number",
+            "Business address"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "R01-LTD",
+          "name": "Private limited company registration",
+          "regulator": "CAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "structure_private"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "structure_private"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "structure_private"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "structure_private"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": "R01",
+          "documents": [
+            "Directors: valid means of identification",
+            "Directors: passport photograph",
+            "Directors: signature",
+            "Directors: if a company acting as a director, certificate of incorporation and board resolution",
+            "Shareholders: valid means of identification",
+            "Shareholders: passport photograph",
+            "Shareholders: signature",
+            "Shareholders: if a company acting as a shareholder, certificate of incorporation and board resolution",
+            "Memorandum and Articles of Association (MEMART)",
+            "Statement of share capital and allotment",
+            "Declaration of compliance signed by a legal practitioner"
+          ],
+          "applicant_information": [
+            "Two proposed company names, in order of preference",
+            "Registered head office address in Nigeria (not a P.O. box)",
+            "Principal business activities",
+            "Issued share capital (minimum ₦100,000) and how the shares are split between shareholders",
+            "Directors (at least one): full personal details",
+            "Directors: occupation",
+            "Shareholders (at least one): full personal details",
+            "Company secretary: full personal details (sources disagree on whether required)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "R01-PLC",
+          "name": "Public limited company registration",
+          "regulator": "CAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "structure_public"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "structure_public"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "structure_public"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "structure_public"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": "R01",
+          "documents": [
+            "Directors: valid means of identification",
+            "Directors: passport photograph",
+            "Directors: signature",
+            "Directors: if a company acting as a director, certificate of incorporation and board resolution",
+            "Shareholders: valid means of identification",
+            "Shareholders: passport photograph",
+            "Shareholders: signature",
+            "Shareholders: if a company acting as a shareholder, certificate of incorporation and board resolution",
+            "Memorandum and Articles of Association (MEMART)",
+            "Statement of share capital and allotment",
+            "Declaration of compliance signed by a legal practitioner",
+            "Register of persons with significant control (5% or more), kept from the start"
+          ],
+          "applicant_information": [
+            "Two proposed company names, in order of preference",
+            "Registered head office address in Nigeria (not a P.O. box)",
+            "Principal business activities",
+            "Issued share capital of at least ₦2,000,000, with at least 25% paid up, and how the shares are split between shareholders",
+            "At least three independent directors: full personal details",
+            "At least three independent directors: occupation",
+            "Shareholders: full personal details",
+            "Company secretary: full personal details (mandatory for public companies)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "R01-AR",
+          "name": "CAC annual returns",
+          "regulator": "CAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "Annual returns are filed against an existing CAC registration"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC04",
+      "requirements": [
+        {
+          "id": "C10",
+          "name": "Sell only NAFDAC-registered cosmetics",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_resell"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration is required before selling cosmetics"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C20",
+          "name": "Confirm product not on import prohibition list",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_import"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C21",
+          "name": "Imported cosmetics registration application",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_import"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "Evidence of CAC business incorporation is a required application document"
+            },
+            {
+              "requirement_id": "T05",
+              "reason": "Evidence of trademark registration is a required application document"
+            },
+            {
+              "requirement_id": "C20",
+              "reason": "NAFDAC does not accept new registration applications for imported products on the Federal Government Import Prohibition List or the NAFDAC Ceiling List"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Application letter to the Director-General, NAFDAC (attention: the Director, DR&R Directorate)",
+            "Evidence of business incorporation from the Corporate Affairs Commission",
+            "Notarised declaration (Appendix 1 of the guideline), typed, signed by the declarant and notarised by a Nigerian notary public",
+            "Power of attorney from the foreign manufacturer (where the applicant acts for that manufacturer), signed by the manufacturer's managing director, general manager, chairman or president, naming the products and stating the authority to register them with NAFDAC, stating who owns the brand name or trademark, notarised in the country of manufacture, valid for at least five years",
+            "Contract manufacturing agreement (where the applicant owns the brand or trademark and a foreign company makes the products), signed by both parties, giving their names and designations, listing all products, notarised in the country of manufacture",
+            "Trademark registration evidence from the Trademarks Registry (Federal Ministry of Industry, Trade and Investment), in the trademark owner's name",
+            "Certificate of Manufacture and Free Sale issued by the health or regulatory authority in the country of manufacture, showing that the manufacturer is licensed and the product can be legally sold there, showing the manufacturer's name and address and the product name, authenticated by the Nigerian Embassy or High Commission in that country (or, where there is none, by a Commonwealth or ECOWAS country's mission)",
+            "Product labels or artwork",
+            "Letter of invitation for a GMP inspection written by the manufacturer, giving the factory address (not the administrative office), email, phone and overseas contact person; the local agent's company name, address, phone, email and Nigerian contact person; and the list of products submitted",
+            "Certificate of analysis on the letterhead of the laboratory that tested the product, including all relevant technical parameters, the brand name, batch number, manufacturing and expiry dates, and the analyst's name, designation and signature"
+          ],
+          "applicant_information": [
+            "Product name",
+            "Brand name or trademark owner's name",
+            "Manufacturer's name and address",
+            "Factory address (not the administrative office)",
+            "Manufacturer's email, phone and overseas contact person",
+            "Local agent's company name, address, phone, email and Nigerian contact person",
+            "List of products submitted"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "C22",
+          "name": "Electronic import permit and laboratory analysis",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_import"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C21",
+              "reason": "NAFDAC issues the electronic import permit only after screening the documents"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Letter of submission for analysis",
+            "Receipt of payment",
+            "Certificate of analysis"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C23",
+          "name": "GMP inspection of the foreign manufacturer",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_import"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C21",
+              "reason": "The imported cosmetics registration application includes the manufacturer's letter of invitation for the inspection"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C24",
+          "name": "Registration approval and certificate",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_import"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C22",
+              "reason": "The product goes to the Food and Drug Registration Committee after laboratory analysis"
+            },
+            {
+              "requirement_id": "C23",
+              "reason": "The product goes to the Food and Drug Registration Committee after GMP inspection where applicable"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C25",
+          "name": "Renewal of imported cosmetics registration",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_import"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C24",
+              "reason": "Renewal is done before the five-year certificate expires"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "C30",
+          "name": "Production facility and staff meet NAFDAC requirements",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_make_locally"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration is required before setting up a production facility"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Medical certificate of fitness for production staff (medical fitness certificate, not the food handler test)",
+            "Fumigation certificate"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C31",
+          "name": "MSME (micro or small scale) cosmetics registration",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_make_locally"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC registration is mandatory because it shows the business is a legal entity on the public register"
+            },
+            {
+              "requirement_id": "C30",
+              "reason": "Facility and staff must meet NAFDAC requirements before registration application"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "CAC registration (business name or company)",
+            "Site use agreement (where applicable)",
+            "Trademark evidence (advised but optional at micro scale)",
+            "One vetting sample and three labels",
+            "Fumigation certificate",
+            "Receipt of payment for production registration",
+            "Medical fitness certificate for production staff, covering sputum, stool, urine, Widal and Hepatitis B tests",
+            "Application letter (small scale)",
+            "Standard operating procedures (SOPs) for production, distribution and recall, quality assurance, equipment cleaning, receiving packaging materials, personal hygiene, water analysis (where applicable) and environmental cleaning (small scale)",
+            "List of raw materials and their sources (small scale)",
+            "Certificates of analysis for raw materials and finished products (small scale)",
+            "Certificate of fumigation (small scale)",
+            "Label and packaging material (small scale)",
+            "Soft copies of all documents, each uploaded file no larger than 500 KB (small scale)",
+            "Batch formulation: the list of all components and raw materials used (small scale)"
+          ],
+          "applicant_information": [
+            "Product name",
+            "Brand name",
+            "Batch number",
+            "Manufacturing and expiry dates",
+            "List of raw materials and their sources (small scale)",
+            "Batch formulation with all components and raw materials (small scale)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "C32",
+          "name": "Standard registration of cosmetics made in Nigeria",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_make_locally"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "Evidence of CAC business incorporation is a required application document"
+            },
+            {
+              "requirement_id": "T05",
+              "reason": "Evidence of trademark registration is a required application document"
+            },
+            {
+              "requirement_id": "C30",
+              "reason": "Facility requirements must be met before registration application"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Application letter to the Director-General, NAFDAC (attention: the Director, DR&R Directorate)",
+            "Evidence of business incorporation from the Corporate Affairs Commission",
+            "Contract manufacturing agreement (where applicable)",
+            "Evidence of brand name registration with the Trademarks Registry, in the trademark owner's name",
+            "Product labels or artwork",
+            "Comprehensive certificate of analysis on the testing laboratory's letterhead, covering all relevant technical parameters and showing the brand name, batch number, manufacturing and expiry dates, and the analyst's name, designation and signature"
+          ],
+          "applicant_information": [
+            "Product name",
+            "Brand name",
+            "Batch number",
+            "Manufacturing and expiry dates",
+            "Trademark owner's name"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "C33",
+          "name": "GMP inspection of the local factory and laboratory analysis",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_make_locally"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C32",
+              "reason": "NAFDAC inspects the production facility after a satisfactory review of the documents"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C34",
+          "name": "Registration approval and certificate (made in Nigeria)",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_make_locally"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C33",
+              "reason": "The product goes to the Food and Drug Registration Committee's approval meeting after GMP inspection and laboratory analysis"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "C35",
+          "name": "Renewal of locally made cosmetics registration",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "COSM",
+              "condition": "variant_make_locally"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "C31",
+              "reason": "Renewal is done before the MSME listing certificate expires"
+            },
+            {
+              "requirement_id": "C34",
+              "reason": "Renewal is done before the standard registration certificate expires"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC03",
+      "requirements": [
+        {
+          "id": "D01",
+          "name": "Production facility meets NAFDAC requirements",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration must be completed before facility requirements can be met"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "D02",
+          "name": "Food handler medical tests for production staff",
+          "regulator": "NAFDAC requirement; tests done at a medical laboratory",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [
+            "Typhoid vaccination certificate (valid for three years)",
+            "Hepatitis A vaccination certificate",
+            "Stool test (microscopy, culture and sensitivity)",
+            "Hepatitis A antigen test"
+          ],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "D03",
+          "name": "NAFDAC facility inspection application and inspection",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration evidence is required as an application document"
+            },
+            {
+              "requirement_id": "R02",
+              "reason": "The NAFDAC portal asks for the business's tax identification number and validates it before the application can be saved"
+            },
+            {
+              "requirement_id": "D01",
+              "reason": "NAFDAC inspects the facility against these requirements; an unsatisfactory inspection results in a non-conformance notice and the process stops"
+            },
+            {
+              "requirement_id": "D02",
+              "reason": "Food handler medical certificates are one of the application documents"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Application letter to the Director-General, NAFDAC (attention: the Director, Food Safety and Applied Nutrition Directorate)",
+            "Evidence of business incorporation or business name registration (CAC)",
+            "Evidence of trademark registration",
+            "Coloured artwork of the product label (front, back, whole and side views)",
+            "Company organogram with names, designations and qualifications of key personnel",
+            "Appointment letters and acceptances for key personnel, and their credentials",
+            "Standard operating procedures (SOPs) for production, quality control, cleaning, customer complaints, recall and distribution",
+            "Food handler medical certificates for production staff",
+            "List of raw materials and their sources",
+            "Certificates of analysis for the finished product and for raw materials",
+            "List of production equipment",
+            "Personnel files (education and training certificates)",
+            "Certificate of fumigation"
+          ],
+          "applicant_information": [
+            "Exact physical address (not a P.O. box)",
+            "Email address",
+            "Phone numbers",
+            "Business's tax identification number",
+            "Proposed inspection date",
+            "Names, designations and qualifications of key personnel"
+          ],
+          "recurring": true
+        },
+        {
+          "id": "D04",
+          "name": "Laboratory analysis of registration samples",
+          "regulator": "NAFDAC laboratory",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "D03",
+              "reason": "Registration samples are taken at the end of a satisfactory inspection"
+            },
+            {
+              "requirement_id": "D08",
+              "reason": "The product is tested against composition, additive and contaminant limits during laboratory analysis, so the recipe must meet them before samples are taken"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "D05",
+          "name": "NAFDAC product registration",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "Evidence of business incorporation is required as an application document"
+            },
+            {
+              "requirement_id": "D03",
+              "reason": "Products go to NAFDAC's approval meeting only after satisfactory document review, GMP inspection and laboratory reports"
+            },
+            {
+              "requirement_id": "D04",
+              "reason": "Products go to NAFDAC's approval meeting only after satisfactory document review, GMP inspection and laboratory reports"
+            },
+            {
+              "requirement_id": "D08",
+              "reason": "Product composition must meet the Fruit Juice and Nectar Regulations before registration"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Application letter for product registration, on company letterhead, to the Director-General (attention: the Director, Food Registration and Regulatory Affairs Directorate)",
+            "Evidence of business incorporation",
+            "Batch formulation, where applicable",
+            "Evidence of payment",
+            "Contract manufacturing agreement, where applicable",
+            "Evidence of brand name registration with the Trademarks Registry (Ministry of Industry, Trade and Investment), in the owner's name",
+            "Product labels or coloured artwork",
+            "Comprehensive certificates of analysis for the product"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "D08",
+          "name": "Product composition meets the Fruit Juice and Nectar Regulations",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "D06",
+          "name": "Product labelling",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "D05",
+              "reason": "The NAFDAC registration number must appear on the label"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [
+            "Ingredients (composition)",
+            "Net volume",
+            "Manufacturer's name and address",
+            "Batch number",
+            "Production date and best-before date",
+            "Storage conditions",
+            "Directions for use, where needed",
+            "NAFDAC registration number",
+            "Fruit content (for fruit juices and nectars)",
+            "Product name that accurately describes the product",
+            "All ingredients in descending order of proportion"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "D07",
+          "name": "Renewal of product registration",
+          "regulator": "NAFDAC",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "D05",
+              "reason": "Product registration must exist before it can be renewed"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Renewal letter to the Director-General",
+            "The expired product licence",
+            "The approved product label",
+            "Receipt of payment for the renewal inspection and laboratory analysis",
+            "GMP re-assessment request letter (standard facilities)"
+          ],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC06",
+      "requirements": [
+        {
+          "id": "N01",
+          "name": "Check whether the business is of major importance",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "sells_online"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "sells_online"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "Only businesses of major importance must register, appoint a Data Protection Officer and file annual compliance audit returns"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "N02",
+          "name": "Register with NDPC as data controller or processor of major importance",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "major_importance"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "N01",
+              "reason": "Only businesses of major importance must register"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "N03",
+          "name": "Appoint a Data Protection Officer",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "major_importance"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "N01",
+              "reason": "Only businesses of major importance must appoint a Data Protection Officer"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [
+            "Data Protection Officer contact details (to be published and sent to NDPC)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "N04",
+          "name": "Publish privacy policy, privacy notice and cookie notice",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "sells_online"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "sells_online"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "collects_personal_data"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "The notice must name the business"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [
+            "Business name",
+            "Lawful basis for processing",
+            "What personal data is collected, why, and how",
+            "Who else has access to the data, and why",
+            "Customers' rights over their data",
+            "Contact within the business for complaints",
+            "Customer's right to complain to NDPC",
+            "Cookies used and why",
+            "How to withdraw consent"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "N05",
+          "name": "Lawful basis and consent for using customer data",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "collects_personal_data"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "collects_personal_data"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "collects_personal_data"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration must be completed before collecting and using customer data"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Written Legitimate Interest Assessment (when relying on legitimate interest)",
+            "Records of consent"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "N06",
+          "name": "Data protection impact assessment for e-commerce",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "sells_online"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "sells_online"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "N03",
+              "reason": "A certified Data Protection Officer must vet the data protection impact assessment"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Data protection impact assessment (DPIA) vetted by a certified Data Protection Officer"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "N07",
+          "name": "Data security and breach reporting",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "collects_personal_data"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "collects_personal_data"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "collects_personal_data"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration must be completed before implementing data security measures"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Security monitoring schedule covering encryption reviews, authentication checks and software updates, certified by a qualified information security officer",
+            "Data processing agreement with any outside company that processes data on the business's behalf",
+            "Internal data protection policy",
+            "Basic privacy checklist"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "N08",
+          "name": "Compliance audit and annual compliance audit returns",
+          "regulator": "Nigeria Data Protection Commission (NDPC)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "major_importance"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "major_importance"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "N02",
+              "reason": "NDPC registration must be completed before filing compliance audit returns"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Data protection compliance audit",
+            "Compliance audit return (CAR) filed through NDPC's online platform",
+            "DPCO Verification Statement (for Ultra High and Extra High Level businesses)"
+          ],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC02",
+      "requirements": [
+        {
+          "id": "R02",
+          "name": "Federal Tax ID",
+          "regulator": "Nigeria Revenue Service (NRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "For companies, the Tax ID comes from the CAC registration number, so the business must be registered with CAC first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "National Identification Number (NIN) for individuals",
+            "CAC registration (RC) number for companies"
+          ],
+          "applicant_information": [
+            "NIN (for sole proprietorship and partnership owners)",
+            "First name (for individuals)",
+            "Last name (for individuals)",
+            "Date of birth (for individuals)",
+            "CAC registration (RC) number (for private and public limited companies)",
+            "Company details (checked against CAC records on REV360)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "R02-VAT",
+          "name": "VAT registration",
+          "regulator": "Nigeria Revenue Service (NRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "not_small_business"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "not_small_business"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "not_small_business"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "not_small_business"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R02",
+              "reason": "VAT registration is done against the business's Tax ID on REV360"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "R02-CIT",
+          "name": "Company income tax and development levy",
+          "regulator": "Nigeria Revenue Service (NRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "company"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "company"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "company"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "company"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R02",
+              "reason": "Company income tax filing is done against the business's Tax ID"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "R02-ST-OY",
+          "name": "Oyo State tax registration",
+          "regulator": "Oyo State Internal Revenue Service (OYSIRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "Oyo"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "State tax registration requires CAC business registration to be completed first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "R02-ST-LA",
+          "name": "Lagos State tax registration",
+          "regulator": "Lagos State Internal Revenue Service (LIRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "Lagos"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "State tax registration requires CAC business registration to be completed first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "BVN or NIN (for individual registration)",
+            "CAC number (for corporate registration)"
+          ],
+          "applicant_information": [
+            "BVN or NIN (for individuals)",
+            "Date of birth (for individuals)",
+            "Address",
+            "Occupation",
+            "Nearest tax station",
+            "CAC number (for corporate taxpayers)",
+            "Company details (for corporate registration)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "R02-ST-FCT",
+          "name": "FCT tax registration",
+          "regulator": "FCT Internal Revenue Service (FCT-IRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "FCT"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "State tax registration requires CAC business registration to be completed first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "R02-ST-RV",
+          "name": "Rivers State tax registration",
+          "regulator": "Rivers State Internal Revenue Service (RIRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "Rivers"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "State tax registration requires CAC business registration to be completed first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "R02-ST-OG",
+          "name": "Ogun State tax registration",
+          "regulator": "Ogun State Internal Revenue Service (OGIRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "Ogun"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "State tax registration requires CAC business registration to be completed first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "R02-ST-ED",
+          "name": "Edo State tax registration",
+          "regulator": "Edo State Internal Revenue Service (EIRS)",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "Edo"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "State tax registration requires CAC business registration to be completed first"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC05",
+      "requirements": [
+        {
+          "id": "P01",
+          "name": "Superintendent pharmacist registered and licensed",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [
+            "NYSC certificate or certificate of exemption",
+            "Signed undertaking that pharmacist holds only one full-time job",
+            "Undertaking from managing director that pharmacist has direct personal control and supervision"
+          ],
+          "applicant_information": [
+            "Pharmacist must be fully registered with PCN",
+            "Pharmacist must have completed NYSC or hold certificate of exemption",
+            "Pharmacist must be up to date with Mandatory Continuing Professional Development (MCPD) programme, where eligible",
+            "Years since registration (for fee calculation)"
+          ],
+          "recurring": true
+        },
+        {
+          "id": "P02",
+          "name": "Business ownership meets PCN rules",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "PCN asks for the CAC documents as evidence of ownership"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Business name registration certificate (for sole proprietorship or partnership)",
+            "Certificate of incorporation (for companies)",
+            "Certified Memorandum and Articles of Association (for companies)",
+            "Certified CAC particulars of directors (for companies)",
+            "Pharmacist director's current annual licence (for companies)"
+          ],
+          "applicant_information": [
+            "CAC route chosen (sole proprietorship, partnership, or company)",
+            "For partnership: confirmation that partners are registered pharmacists",
+            "For companies: at least one pharmacist on the board of directors"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "P03",
+          "name": "Premises meet PCN siting and structure standards",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [
+            "Proposed site location",
+            "Distance from nearest standalone pharmacy (must be at least 200 metres)",
+            "Distance from nearest pharmacy in shopping centre (must be at least 200 metres for standalone)",
+            "Distance from nearest patent medicine shop (must be at least 400 metres)",
+            "For shopping centres: number and spacing of pharmaceutical premises",
+            "Floor area (minimum 30 square metres)",
+            "Ceiling height (at least 3.05 metres)"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "P04",
+          "name": "Location approval",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "P01",
+              "reason": "The pharmacist's current annual licence is a required document for location approval"
+            },
+            {
+              "requirement_id": "P02",
+              "reason": "PCN asks for CAC documents as evidence of ownership for location approval"
+            },
+            {
+              "requirement_id": "P03",
+              "reason": "PCN checks that the proposed site and its size meet requirements"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Superintendent pharmacist's current annual licence, or renewal application",
+            "Evidence of fee payment",
+            "Superintendent pharmacist's appointment letter, where applicable",
+            "Certified certificate of incorporation, or business name registration for a pharmacist-owned retail pharmacy",
+            "Certified Memorandum and Articles of Association",
+            "Particulars of directors",
+            "Pharmacist director's current annual licence",
+            "Signed disclaimer of liability form"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "P05",
+          "name": "Premises registration (pre-registration inspection and Form B)",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "P04",
+              "reason": "The pre-registration inspection is carried out only after the location is approved and Form B has been submitted"
+            },
+            {
+              "requirement_id": "P03",
+              "reason": "The inspection checks that the building and facilities meet PCN standards"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Application letter to register the premises, addressed to the Registrar",
+            "Completed Form B (in duplicate, with recent colour passport photograph and list of enclosed documents)",
+            "Photocopy of superintendent pharmacist's current annual licence (or Form J)",
+            "Receipt for inspection and registration fees (paid with Remita payment number)",
+            "Resignation and acceptance letters from any previous employer, where applicable",
+            "Appointment letter at the new premises, where applicable",
+            "Legal agreement between superintendent pharmacist and employer, where applicable",
+            "Certificate of incorporation, or business name registration for pharmacist-owned pharmacy",
+            "Certified Memorandum and Articles of Association (companies)",
+            "Certified true copies of particulars of directors from CAC (companies)",
+            "NYSC certificate or certificate of exemption",
+            "Superintendent pharmacist's undertaking to hold only one full-time job",
+            "Managing director's undertaking that superintendent pharmacist personally supervises the business",
+            "Inter-state movement form, where applicable",
+            "Pharmacist director's current annual licence"
+          ],
+          "applicant_information": [
+            "Name and address of the premises",
+            "Email and phone numbers",
+            "Registered pharmacist in control and their registration number",
+            "Whether premises is new or old (for old premises: last certificate number and date)",
+            "Scope of practice (retail and dispensing)",
+            "Category and class (community pharmacy)",
+            "Directors' names, professions, registration numbers and annual licence numbers",
+            "Pharmacist's residential address",
+            "Agreement to notify Registrar immediately about any change of premises address or pharmacist in charge"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "P06",
+          "name": "Display certificates and meet operating standards",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "P05",
+              "reason": "The premises registration certificate and superintendent pharmacist's licence must be obtained before they can be displayed"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "P07",
+          "name": "Annual renewal of premises registration",
+          "regulator": "PCN",
+          "applies_to": [
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "P05",
+              "reason": "The premises must be initially registered before it can be renewed"
+            },
+            {
+              "requirement_id": "P01",
+              "reason": "The superintendent pharmacist's annual licence must be renewed as part of the premises renewal process"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Evidence of retention fee payment (must be paid before 31 January)"
+          ],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC07",
+      "requirements": [
+        {
+          "id": "S01",
+          "name": "Confirm product needs MANCAP and its Nigerian Industrial Standard",
+          "regulator": "Standards Organisation of Nigeria (SON)",
+          "applies_to": [
+            {
+              "business_type": "FURN",
+              "condition": "variant_make_locally"
+            },
+            {
+              "business_type": "DRINKS",
+              "condition": "optional"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S02",
+          "name": "MANCAP application",
+          "regulator": "Standards Organisation of Nigeria (SON)",
+          "applies_to": [
+            {
+              "business_type": "FURN",
+              "condition": "variant_make_locally"
+            },
+            {
+              "business_type": "DRINKS",
+              "condition": "optional"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "The CAC certificate of incorporation is a required document"
+            },
+            {
+              "requirement_id": "S01",
+              "reason": "MANCAP certifies products against the relevant Nigerian Industrial Standard, so the business needs to know which standard applies"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Certificate of incorporation from the Corporate Affairs Commission (CAC)",
+            "On-the-spot test report",
+            "Laboratory report from SON or from a laboratory accredited by the Institute of Public Analysts of Nigeria (IPAN) if on-the-spot test is not comprehensive",
+            "Proof of payment for the MANCAP application form",
+            "Proof of payment for certification"
+          ],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S03",
+          "name": "Factory inspections and product conformity",
+          "regulator": "Standards Organisation of Nigeria (SON)",
+          "applies_to": [
+            {
+              "business_type": "FURN",
+              "condition": "variant_make_locally"
+            },
+            {
+              "business_type": "DRINKS",
+              "condition": "optional"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S02",
+              "reason": "Factory inspections occur after the MANCAP application is submitted"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S04",
+          "name": "MANCAP certificate and logo",
+          "regulator": "Standards Organisation of Nigeria (SON)",
+          "applies_to": [
+            {
+              "business_type": "FURN",
+              "condition": "variant_make_locally"
+            },
+            {
+              "business_type": "DRINKS",
+              "condition": "optional"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S03",
+              "reason": "The certificate is issued after factory inspections and product conformity are completed"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S05",
+          "name": "MANCAP recertification",
+          "regulator": "Standards Organisation of Nigeria (SON)",
+          "applies_to": [
+            {
+              "business_type": "FURN",
+              "condition": "variant_make_locally"
+            },
+            {
+              "business_type": "DRINKS",
+              "condition": "optional"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S04",
+              "reason": "Recertification occurs after three years when the MANCAP certificate expires"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC08",
+      "requirements": [
+        {
+          "id": "S-OY-01",
+          "name": "Oyo State business premises registration",
+          "regulator": "Oyo State Ministry of Trade, Industry, Investment and Cooperatives",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Oyo"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "A copy of the business's CAC certificate is a required document"
+            },
+            {
+              "requirement_id": "R02-ST-OY",
+              "reason": "A personal income tax clearance certificate is a required document"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "Copy of the business's CAC certificate",
+            "Copies of personal income tax clearance certificates for the last three years",
+            "Evidence of payment of the registration fee"
+          ],
+          "applicant_information": [
+            "Written application to the Honourable Commissioner"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "S-OY-02",
+          "name": "Oyo State business premises renewal",
+          "regulator": "Oyo State Ministry of Trade, Industry, Investment and Cooperatives",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Oyo"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S-OY-01",
+              "reason": "This is the annual renewal of the Oyo State business premises registration"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "S-LA-01",
+          "name": "Lagos State business premises registration",
+          "regulator": "Lagos State Internal Revenue Service",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Lagos"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "Registration is done on the LIRS eTax portal using the business's CAC number"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [
+            "CAC number",
+            "All company details requested in the eTax portal form"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "S-LA-02",
+          "name": "Lagos State business premises renewal",
+          "regulator": "Lagos State Internal Revenue Service",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Lagos"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S-LA-01",
+              "reason": "This is the annual renewal of the Lagos State business premises registration"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "S-FCT-01",
+          "name": "FCT business premises levy",
+          "regulator": "FCT Internal Revenue Service",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "FCT"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "The business must register with CAC before registering the premises"
+            },
+            {
+              "requirement_id": "R02",
+              "reason": "The business must get a Tax ID from the national Tax ID portal before registering the premises"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S-RV-01",
+          "name": "Rivers State business premises registration",
+          "regulator": "Rivers State Internal Revenue Service",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Rivers"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration is required before premises registration"
+            },
+            {
+              "requirement_id": "R02-ST-RV",
+              "reason": "Business premises registration and renewal are paid on the RIRS taxpayer portal, RIVTAMIS, which needs a RIVTIN account"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S-OG-01",
+          "name": "Ogun State Business Premises Permit",
+          "regulator": "Ogun State Ministry of Industry, Trade and Investment",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Ogun"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration is required, though informal businesses can also register using their proposed business name"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [
+            "Business name",
+            "Email address",
+            "All details requested in the online registration form"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "S-OG-02",
+          "name": "Ogun State Business Premises Permit renewal",
+          "regulator": "Ogun State Ministry of Industry, Trade and Investment",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Ogun"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S-OG-01",
+              "reason": "This is the annual renewal of the Ogun State Business Premises Permit"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        },
+        {
+          "id": "S-ED-01",
+          "name": "Edo State business premises registration",
+          "regulator": "Edo State Internal Revenue Service",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Edo"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "R01",
+              "reason": "CAC business registration is required before premises registration"
+            },
+            {
+              "requirement_id": "R02-ST-ED",
+              "reason": "Edo State tax registration is required before premises registration"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "S-ED-02",
+          "name": "Edo State business premises renewal",
+          "regulator": "Edo State Internal Revenue Service",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "Edo"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "S-ED-01",
+              "reason": "This is the annual renewal of the Edo State business premises registration"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC09",
+      "requirements": [
+        {
+          "id": "T01",
+          "name": "Trademark availability search",
+          "regulator": "Trademarks, Patents and Designs Registry",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "optional"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "T02",
+          "name": "Trademark application (filing)",
+          "regulator": "Trademarks, Patents and Designs Registry",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "optional"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "T01",
+              "reason": "The Registry advises making sure a mark does not infringe an existing trademark before applying"
+            }
+          ],
+          "satisfies": null,
+          "documents": [
+            "A representation of the mark that is visible, clear and distinct (for online filing: a JPEG soft copy of at least 1200 dpi, preferred size 120 × 100 pixels)",
+            "A power of attorney or authorisation of agent form, when filing through an agent"
+          ],
+          "applicant_information": [
+            "Applicant's full name or names",
+            "Physical address",
+            "Nationality",
+            "Email",
+            "Phone number",
+            "For a company filing through an agent: the full name and capacity of the person signing"
+          ],
+          "recurring": false
+        },
+        {
+          "id": "T03",
+          "name": "Examination and acceptance",
+          "regulator": "Trademarks, Patents and Designs Registry",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "optional"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "T02",
+              "reason": "The Registry must examine the application after it is filed"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "T04",
+          "name": "Publication and opposition period",
+          "regulator": "Trademarks, Patents and Designs Registry",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "optional"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "T03",
+              "reason": "The mark must be accepted before it can be advertised in the Trade Marks Journal"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "T05",
+          "name": "Registration certificate",
+          "regulator": "Trademarks, Patents and Designs Registry",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "optional"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "T04",
+              "reason": "The certificate is issued only if there is no opposition or the opposition fails"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": false
+        },
+        {
+          "id": "T06",
+          "name": "Trademark renewal",
+          "regulator": "Trademarks, Patents and Designs Registry",
+          "applies_to": [
+            {
+              "business_type": "DRINKS",
+              "condition": "always"
+            },
+            {
+              "business_type": "COSM",
+              "condition": "always"
+            },
+            {
+              "business_type": "FURN",
+              "condition": "optional"
+            },
+            {
+              "business_type": "PHARM",
+              "condition": "optional"
+            }
+          ],
+          "applies_in": [
+            "ALL"
+          ],
+          "depends_on": [
+            {
+              "requirement_id": "T05",
+              "reason": "The trademark must be registered before it can be renewed"
+            }
+          ],
+          "satisfies": null,
+          "documents": [],
+          "applicant_information": [],
+          "recurring": true
+        }
+      ]
+    }
+  ]
+}

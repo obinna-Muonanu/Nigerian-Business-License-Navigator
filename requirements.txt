@@ -1,0 +1,20 @@
+# The Python packages this project needs. Install them with:  pip install -r requirements.txt
+
+# The agent framework, and the AWS library it uses to reach Bedrock.
+strands-agents>=1.61.0        # runs the agent loop, and gives us hooks, chat saving, summarising and streaming
+boto3>=1.40.0                 # talks to AWS: the Bedrock models and the Titan embeddings
+
+# The knowledge database.
+neo4j>=5.27.0                 # the official Neo4j driver (the graph and the vector index live in one AuraDB)
+
+# Data shapes and settings.
+pydantic>=2.9.0               # defines and checks the shapes of tool results, the extraction form and the judge's grades
+pydantic-settings>=2.6.0      # reads and checks the settings in .env (see agent/config.py)
+python-dotenv>=1.0.1          # lets pydantic-settings read the .env file
+PyYAML>=6.0.2                 # reads the header block at the top of each knowledge-base document
+
+# The API server and the web app.
+fastapi>=0.115.0              # the API, including streaming replies on /chat and whole replies on /invoke
+uvicorn[standard]>=0.32.0     # the web server that runs the FastAPI app
+streamlit>=1.40.0             # the chat web page, with the checklist and the diagram
+requests>=2.32.0              # lets the web page call the API and read the streamed reply

@@ -1,0 +1,90 @@
+{
+  "description": "Scripted multi-turn tool scenarios. expected_tools must have run successfully at least once; forbidden_tools must never have run successfully. profile/done pre-load long-term memory. Turns are sent in order in one session.",
+  "scenarios": [
+    {
+      "id": "tool-01-zobo-checklist",
+      "demo": 1,
+      "turns": [
+        "I want to start selling packaged zobo drinks in Ibadan. What do I need, and in what order?",
+        "I make the drinks myself. I have not registered with CAC yet, I will be a sole proprietor, and I don't collect customers' personal data."
+      ],
+      "expected_tools": ["remember_profile", "plan_steps"],
+      "forbidden_tools": ["save_checklist", "update_progress"]
+    },
+    {
+      "id": "tool-02-fee-question",
+      "demo": 2,
+      "profile": "zobo_ibadan",
+      "turns": ["How much is the CAC business name registration fee and how long does it take?"],
+      "expected_tools": ["vector_search"],
+      "expect_citation": true
+    },
+    {
+      "id": "tool-03-progress-replan",
+      "demo": 3,
+      "profile": "zobo_ibadan",
+      "turns": ["I have finished my business registration. What is next?", "Yes, please mark it as done."],
+      "expected_tools": ["update_progress", "plan_steps"]
+    },
+    {
+      "id": "tool-04-why-path",
+      "demo": 4,
+      "profile": "zobo_ibadan",
+      "turns": ["Why do I need the NAFDAC facility inspection before NAFDAC product registration?"],
+      "expected_tools": ["explain_path"]
+    },
+    {
+      "id": "tool-05-online-data-change",
+      "demo": 5,
+      "profile": "zobo_ibadan",
+      "turns": ["I also want to sell online and collect customers' details. Does anything change?"],
+      "expected_tools": ["remember_profile", "plan_steps"]
+    },
+    {
+      "id": "tool-06-unknown",
+      "demo": 6,
+      "profile": "zobo_ibadan",
+      "turns": ["What permit do I need to export my zobo to Ghana, and how much does it cost?"],
+      "expected_tools": [],
+      "expect_no_answer": true,
+      "note": "Exports are outside the knowledge base's scope, so the agent may say so straight away (system prompt SCOPE rule) without searching. What matters is that it says it does not know and invents no fee."
+    },
+    {
+      "id": "tool-07-pidgin",
+      "demo": 7,
+      "turns": [
+        "Abeg, wetin I need to open pharmacy for Lagos? I never register anything yet.",
+        "Na partnership of two pharmacists. We go dey collect customer names and phone numbers."
+      ],
+      "expected_tools": ["remember_profile", "plan_steps"],
+      "expect_language": "pidgin"
+    },
+    {
+      "id": "tool-08-save-checklist",
+      "profile": "zobo_ibadan",
+      "turns": ["Show me my checklist and save it for me.", "Yes, save it."],
+      "expected_tools": ["plan_steps", "save_checklist"]
+    },
+    {
+      "id": "tool-09-reminder",
+      "profile": "zobo_ibadan",
+      "turns": ["Set a reminder for my NAFDAC product registration on 2027-01-15.", "Yes, go ahead."],
+      "expected_tools": ["set_reminder"]
+    },
+    {
+      "id": "tool-10-handoff",
+      "profile": "zobo_ibadan",
+      "turns": ["This is useless. I want to talk to a real person now."],
+      "expected_tools": ["handoff_to_human"]
+    },
+    {
+      "id": "tool-11-returning-user",
+      "profile": "zobo_ibadan",
+      "done": ["R01-SP"],
+      "turns": ["Hi, I'm back. What should I do next for my business?"],
+      "expected_tools": ["plan_steps"],
+      "forbidden_tools": ["remember_profile"],
+      "note": "Long-term memory: the agent already knows the profile and must not ask for it again."
+    }
+  ]
+}

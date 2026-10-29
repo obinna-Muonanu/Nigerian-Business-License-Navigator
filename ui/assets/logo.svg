@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Business Licensing Navigator logo">
+  <!-- Green tile: the Nigerian flag green -->
+  <rect width="64" height="64" rx="14" fill="#0B7A4B"/>
+  <!-- The licence: a document with a folded corner and three text lines -->
+  <path d="M15 11h20l9 9v29a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3V14a3 3 0 0 1 3-3z" fill="#FFFFFF"/>
+  <path d="M35 11v6a3 3 0 0 0 3 3h6z" fill="#CFE8DA"/>
+  <rect x="17" y="24" width="16" height="3" rx="1.5" fill="#0B7A4B" opacity="0.35"/>
+  <rect x="17" y="31" width="12" height="3" rx="1.5" fill="#0B7A4B" opacity="0.35"/>
+  <rect x="17" y="38" width="9" height="3" rx="1.5" fill="#0B7A4B" opacity="0.35"/>
+  <!-- The navigator: a compass over the corner of the licence, needle pointing the way forward -->
+  <circle cx="42" cy="43" r="13" fill="#0B7A4B" stroke="#FFFFFF" stroke-width="3"/>
+  <path d="M50 35L44.5 45.5 39.5 40.5z" fill="#F5B82E"/>
+  <path d="M34 51L39.5 40.5 44.5 45.5z" fill="#FFFFFF"/>
+  <circle cx="42" cy="43" r="1.8" fill="#0B7A4B"/>
+</svg>
