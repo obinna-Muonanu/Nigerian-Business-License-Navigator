@@ -223,7 +223,7 @@ Four test suites, all re-runnable with one command (section 4.6):
 | **Key experiment** | 15 questions, each answered by **both** a vector-only baseline and GraphRAG | An independent judge (Claude Sonnet), against gold answers |
 | **RAG questions** | 31 questions (6 Pidgin messages across the suites) | The judge, against the expected document section |
 | **Tool scenarios** | 11 scripted conversations, including the 7 demo scenarios | Hard checks on the audit log: did the right tools **actually run**? |
-| **Safety cases** | 5 attacks (prompt injection, fake confirmation, prompt extraction, ID numbers, "just guess") | Hard checks **and** the judge |
+| **Safety cases** | 12 cases: 10 attacks (prompt injection, fake confirmation, prompt extraction, ID numbers, "just guess" and others) and 2 normal questions that must not be blocked | Hard checks **and** the judge |
 
 To keep the experiment **fair**, the baseline and GraphRAG use the same model, documents, vector index
 and prompt. **The only difference is the graph.** Gold answers for checklist questions are computed
@@ -233,50 +233,56 @@ directly from the hand-reviewed graph, and any order that respects the prerequis
 
 ## 3. The results
 
-All results come from the final version of the agent (Claude Haiku 4.5), saved in `evaluation/results/`.
+All results below come from the latest full run, on **3 November 2026**, using Claude Haiku 4.5. The reports
+are saved in `evaluation/results/`.
 
 ### 3.1 Summary
 
-| Suite | Result |
+| Test | Result |
 |---|---|
-| **Tool scenarios** | **11 / 11 passed**: every demo scenario works, and no false "done" claims |
-| **Safety cases** | **5 / 5 passed**: injection, fake confirmation, prompt extraction, ID masking, refusing to guess |
-| **RAG questions** | Correctness **1.81 / 2**, citation **1.90 / 2**, "I don't know" handled correctly **2 / 2** |
+| **Unit tests** | **55 / 55 passed** |
+| **Safety cases** | **12 / 12 passed** |
+| **Tool scenarios** | **10 / 11 passed**. The Pidgin scenario failed (see section 3.4) |
+| **RAG questions** | Correctness **1.84 / 2**, citation **1.86 / 2**, "I don't know" handled correctly **2 / 2** |
+| **Asking for a person** | **13 / 20** (see section 3.4) |
+| **Guardrail alone** | Caught **9 of 15** attacks, and wrongly flagged **3 of 25** normal questions |
 
 ### 3.2 The key experiment: does the graph help?
 
 Each answer was graded **0** (wrong), **1** (partly right) or **2** (fully right), averaged over 5
 questions per type, and shown here as a percentage.
 
-| Question type | Vector-only | GraphRAG | Valid order (vector → graph) |
+| Question type | Correct: vector-only → GraphRAG | Citations: vector-only → GraphRAG | Valid order: vector-only → GraphRAG |
 |---|---|---|---|
-| **Simple lookup** ("What is the CAC fee?") | 80% | 80% | – |
-| **Multi-step** ("What do I need, and in what order?") | 40% | **50%** | 2/5 → **4/5** |
-| **Progress** ("I've done X, what's left?") | 30% | **80%** | 3/5 → **5/5** |
+| **Simple lookup** ("What is the CAC fee?") | 90% → 90% | 100% → 100% | – |
+| **Multi-step** ("What do I need, and in what order?") | 50% → **70%** | 80% → **100%** | 3/5 → **5/5** |
+| **Progress** ("I've done X, what's left?") | 40% → **50%** | 50% → **90%** | 4/5 → **5/5** |
+
+**The "valid order" column was counted by code, not by the judge.** The code finds each step's name in the
+reply and checks that no step appears before something it depends on. The judge's own order scores were
+unreliable: it gave GraphRAG 2/5 in both rows, but some of its reasons described mistakes that aren't in the
+reply. The code can only check step names it finds, and the vector-only replies name far fewer steps, so
+their order scores are easier to earn.
 
 **Where the graph helped:**
-- **Progress questions (30% → 80%).** The graph knows every requirement, so the agent simply removes
-  the completed steps. Without it, the baseline usually **did not search at all** and answered from
-  general knowledge. It named the old tax agency (FIRS instead of the Nigeria Revenue Service) and
-  invented a step.
-- **Multi-step questions.** The graph returns the complete, connected list in one call, so checklists
-  were in a valid order 4 times out of 5 (baseline 2 out of 5). The baseline needed up to 7 searches
-  per question and still missed whole regulators: 7 of 32 steps for the cosmetics importer.
-- **Efficiency.** 5 document searches instead of 32 across the 15 questions, and about 40% fewer input
-  tokens per turn, at the same speed.
+- **Multi-step questions.** The graph returns the connected list in one call. The vector-only version needed
+  5 to 7 searches on most of these questions and still missed many steps.
+- **Citations on progress questions (50% → 90%).** The graph's steps come with their sources. Without the
+  graph, the agent often answered without proper sources.
+- **Fewer searches.** 5 document searches instead of 33 across the 15 questions, and about 13% fewer input
+  tokens per turn.
 
 **Where it made no difference:**
-- **Simple lookups.** A single fact lives in one paragraph, and both versions find it with the same
-  search.
-- **Very long checklists stayed "partly right" in both versions**, because the agent summarised 20–30
-  step plans to keep replies readable.
+- **Simple lookups.** A single fact lives in one paragraph, and both versions find it with the same search.
 
-**Conclusion:** the graph helps exactly where the brief predicts. It matters for questions whose answer
-depends on connections across documents, and makes no difference for single-fact lookups.
+**Where it's still weak:** long checklists are often only "partly right" even with the graph, because Navi
+shortens 20 to 30 step plans when writing the reply. The graph supplies every step; the steps are lost when
+the model writes the answer.
 
-**Limitations:** 5 questions per type, so read the differences as direction, not precision. The gold
-answers come from the same graph GraphRAG uses. The full write-up, with every caveat, is in
-[evaluation/EXPERIMENT_REPORT.md](evaluation/EXPERIMENT_REPORT.md).
+**Limitations:** there are only 5 questions per type, so one answer moves a score by 10 to 20 points, and the
+27 October run gave different numbers (progress was 30% → 80%). The direction was the same in both runs:
+GraphRAG was never behind, and lookups were always equal. The gold answers also come from the same graph
+GraphRAG uses. The full write-up is in [evaluation/EXPERIMENT_REPORT.md](evaluation/EXPERIMENT_REPORT.md).
 
 ### 3.3 Problems found and fixed during testing
 
@@ -290,6 +296,18 @@ Testing found real bugs, which were fixed before the final run:
 | The agent called covered topics "out of scope" without searching | A per-message "search before saying you don't know" reminder |
 | The agent held back "what's left" while asking to record progress | It now shows the answer at once and asks for the "yes" at the end |
 | One reply claimed a blocked save had happened | A visible correction is added, and every tool scenario now checks for this |
+
+### 3.4 Known weak spots (not fixed yet)
+
+The latest run found these problems:
+
+| Problem | What happens | Result |
+|---|---|---|
+| **Navi can miss a fact in a Pidgin message** | The user said "I never register anything yet", but Navi didn't save it and asked again, so the checklist came a turn later | Tool scenario 7 failed in both runs on 3 November |
+| **Navi doesn't always offer a person when the user is frustrated** | It apologises and carries on, without offering a human adviser | 2 of 6 frustrated messages got an offer (5 of 6 in the earlier run) |
+| **A correct answer can fall just below the search cut-off** | "What medical tests do production staff need?" got "I don't have that", because the closest passage scored just under 0.70 on the words Navi searched with. Similar wording scored 0.713 | 1 of 31 RAG questions |
+| **Navi sometimes uses the wrong tool for "why" questions** | "Why is the inspection needed before registration?" got "I don't have that", when the graph holds the reason | Seen once in the hand-off test |
+| **Replies are slow when the server is far from the database** | The same lookup questions took about 7 seconds with a local database and 15 to 17 seconds with Neon from a laptop. Each reply needs many database calls, and each call has to travel to Neon and back | Keep the server and Neon in the same region when deploying. Not yet measured on a live server |
 
 ---
 
@@ -378,7 +396,7 @@ takes minutes.
 
 ### 4.6 Run the evaluation
 ```powershell
-python -m evaluation.run_eval --suite safety                   # 5 attack cases
+python -m evaluation.run_eval --suite safety                   # 12 safety cases
 python -m evaluation.run_eval --suite tools                    # 11 tool scenarios
 python -m evaluation.run_eval --suite rag --mode graphrag      # 31 RAG questions
 python -m evaluation.run_eval --suite comparison --mode both   # the key experiment

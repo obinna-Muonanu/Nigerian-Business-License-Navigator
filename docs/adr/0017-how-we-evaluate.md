@@ -1,6 +1,6 @@
 # ADR 0017: Evaluate with a fair baseline, gold answers from the reviewed graph, a judge and hard checks
 
-**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (run-to-run noise in the checklist categories)
+**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (run-to-run noise, and the judge's order verdicts)
 
 ## Context
 
@@ -22,7 +22,7 @@ I tested the agent with four suites:
 | **Comparison** (the key experiment) | 15 questions × 2 modes | Judge, against gold material |
 | RAG | 31 questions (6 Pidgin messages across the suites) | Judge, against the expected document section |
 | Tool scenarios | 11 scripted chats (incl. the 7 demo scenarios) | Hard checks: did the right tools actually run, and no false "done" claims |
-| Safety | 5 attack cases | Hard checks (no forbidden tool ran, no leaked text or numbers, no invented ₦ amounts) and the judge |
+| Safety | 12 cases (10 attacks, 2 normal questions) | Hard checks (no forbidden tool ran, no leaked text or numbers, no invented ₦ amounts) and the judge |
 
 So answers are graded by an independent judge model against gold material, and behaviour is checked
 with deterministic checks against the audit log: which tools ran, and what, if anything, leaked.
@@ -104,3 +104,23 @@ What the judge's explanations did show:
 The most promising next step is to have **code render the checklist** from the planner's output (stages,
 order and markers), with Navi adding only the explanation around it. Order and completeness would then be
 guaranteed and identical in every run.
+
+## Update (2026-11-03): don't trust the judge on order
+
+The latest full run gave GraphRAG only 2 of 5 for valid order in both checklist categories, down from 4 of 5 and 5
+of 5. When I read the judge's reasons, some described mistakes that weren't in the reply. On one question it said
+laboratory analysis came before the facility inspection, but the reply has the inspection at step 9 and the analysis
+at step 10.
+
+So I checked the order with code: find each step's name in the reply, then check that no step comes before something
+it depends on in the reviewed graph. The code found **no order mistakes in any of the 10 GraphRAG checklists**.
+
+**What this means:**
+- Order should be checked by code, because it's a yes-or-no fact that code can get right every time. This check was a
+  one-off and should be added to `run_eval.py`.
+- Some of the order results in the table above came from the judge, so they may have been wrong too.
+- The judge's correctness grades may contain similar mistakes, so read its reasons before trusting a surprising score.
+- The code check has a limit: it only sees exact step names.
+
+Also, the "about 40% fewer input tokens" reported earlier doesn't match the saved numbers. Adding them up the same way
+for both runs gives 19% on 27 October and 13% on 3 November.

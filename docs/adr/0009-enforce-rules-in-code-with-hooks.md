@@ -80,3 +80,7 @@ and offered a human, which is what its rules ask for, so counting those as corre
 real misses: "Is there someone at your office I can call?" got an offer instead of an immediate hand-off,
 and one Pidgin complaint ("Na wa o…") got an apology without an offer. The lesson matches the language
 work: the model follows a specific required sentence far more reliably than general advice.
+
+**Re-test (2026-11-03):** the same 20 messages with the same rule scored 13/20: requests 5/6, frustration 2/6 and
+look-alikes 6/8. So frustration fell from 5/6 to 2/6, and Navi often apologised without offering a person. The rule
+is less reliable than the earlier run suggested, and this is a known weak spot.
