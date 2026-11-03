@@ -1,6 +1,6 @@
 # ADR 0005: Use fixed graph queries first; text-to-Cypher only as a guarded extra
 
-**Status:** Accepted · **Date:** 2026-10-26
+**Status:** Accepted · **Date:** 2026-10-26 · Updated 2026-11-03 (one corrected retry, and an honest fallback)
 
 ## Context
 
@@ -61,3 +61,27 @@ reject a harmless query. When that happens, the agent just falls back to the fix
 The fixed queries and the planner are in `agent/knowledge/graph_service.py`. Validation, `EXPLAIN`
 and the read-only run are in `agent/knowledge/cypher_guard.py`. `read()` in
 `agent/storage/neo4j_client.py` always uses a READ transaction.
+
+## Update (2026-11-03): one corrected retry, and an honest fallback
+
+The original fallback told the agent "use the fixed graph tools instead" whenever a generated query failed.
+That was only half right. Text-to-Cypher is used precisely for questions the fixed tools weren't built for,
+so the fixed tools can't always answer them.
+
+Two changes:
+
+**One corrected retry.** Most failed queries are a typo, a wrong label, a wrong value ("lagos" instead of
+"Lagos") or an arrow pointing the wrong way. So when a query is rejected, errors, returns nothing, or returns a
+top row with empty values (a calculation that silently didn't work), the query writer is shown its own query and
+the exact problem and gets one more try. Every new query still goes through the full safety check.
+
+**An honest fallback.** If the second try fails too, the agent is told to use the fixed tools *only if* their
+results can genuinely answer the question, fully or in part (and to say which part). Otherwise it must tell the
+user plainly that it can't answer that question and offer a human adviser. It must never estimate or guess
+counts, names or rankings.
+
+Tested with a scripted query writer: a wrong label is corrected on the second attempt, as is an empty result
+caused by a misspelt value. Two data-changing queries are both rejected, nothing runs, and the honest next step
+is returned. A good first query needs only one attempt. With the real query writer, a question about the
+longest chain of prerequisites first "succeeded" with an empty value at the top. That is what led to the
+empty-values check: a misleading answer is worse than an honest "I can't answer that".

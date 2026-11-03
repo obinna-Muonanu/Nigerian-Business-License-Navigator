@@ -1,6 +1,6 @@
 # ADR 0007: Two kinds of memory: short-term per session, long-term per user
 
-**Status:** Accepted · **Date:** 2026-10-27
+**Status:** Replaced by [0018](0018-production-memory.md) · **Date:** 2026-10-27
 
 ## Context
 

@@ -27,7 +27,7 @@ agent/
   hooks/         the policy layer                           (ADR 0009)
 ingestion/       build the graph and the vector index (offline)
 evaluation/      datasets, judge, runner, results           (ADR 0017)
-server.py · main_agent.py · ui/streamlit_app.py
+server.py · auth.py · main_agent.py · frontend/ (React web app, ADR 0019)
 ```
 
 The tools are deliberately thin. Each one reads the user's state and calls a service in `knowledge/`

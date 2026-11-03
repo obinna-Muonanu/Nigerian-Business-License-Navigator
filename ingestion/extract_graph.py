@@ -1,4 +1,4 @@
-"""WHAT THIS FILE DOES
+"""
 It builds the knowledge graph by having an AI read each official document, then checks the result before it's used.
 
 For each document, Claude lists every requirement it describes: its name, regulator, which businesses and states it

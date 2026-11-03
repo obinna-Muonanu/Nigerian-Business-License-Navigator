@@ -1,6 +1,6 @@
 # ADR 0008: Our own conversation manager: after 30 turns, keep the last 12 messages and summarise the rest
 
-**Status:** Accepted · **Date:** 2026-10-27
+**Status:** Accepted · **Date:** 2026-10-27 · Amended by [0018](0018-production-memory.md): the summary now starts when the context window reaches about 24,000 tokens, and keeps the last 5 turns (not 12 messages) word for word
 
 ## Context
 

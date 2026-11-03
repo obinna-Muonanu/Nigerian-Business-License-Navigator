@@ -1,6 +1,6 @@
 # ADR 0012: Reply in the language of each message
 
-**Status:** Accepted · **Date:** 2026-10-27
+**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-01 (see "Update: can the system prompt do this alone?" below)
 
 ## Context
 
@@ -57,3 +57,33 @@ misjudge a very short or mixed message, but if it does, the next message puts it
 
 Detection is `_is_pidgin` in `agent/hooks/input_guard.py`, which also adds the per-message note. The
 language rule itself is in `agent/prompts.py`.
+
+## Update (2026-11-01): can the system prompt do this alone?
+
+I was asked whether a hook is needed at all, or whether a well-written system prompt could do the job.
+So I tested it rather than guessing. First I gave the prompt its own **REPLY LANGUAGE** section near the
+top, with a worked example of a conversation switching from English to Pidgin and back. Then I ran the
+same live test against three setups: two conversations, 11 messages, switching language several times,
+with each reply's language judged by a separate model.
+
+| Setup | Replies in the right language |
+|---|---|
+| System prompt only (language note removed from the hook) | 7 / 11 |
+| System prompt + a neutral note on each message ("reply in this message's language") | 9 / 11 |
+| System prompt + the hook's note naming the language ("this message is in English") | 10 / 11 |
+| The same, after teaching the detector Pidgin's "go + verb" future | **11 / 11** |
+
+With the prompt alone, the old problem came straight back. Every switch from Pidgin back to English
+failed, because the model copied the language of its own recent replies. A rule written once at the top
+of a long prompt is weaker than that pull. A note attached to the newest message is not.
+
+The one miss with the original hook was "How much NAFDAC registration go cost me?", which contains none
+of the detector's Pidgin words. Pidgin puts "go" straight before a verb for the future ("e go cost", "e go
+take"), so the detector now counts that pattern as strong evidence of Pidgin. It ignores the pattern when
+"will", "to", "can", "let's" and similar words come in the two words before "go", so casual English like
+"I will go take a look" or "Can I go get the forms?" is still read as English. All 46 messages in the
+evaluation datasets are still classified correctly.
+
+**Decision:** keep both. The system prompt explains the rule once, clearly and with an example. The hook
+repeats it on every message and names that message's language. The detected language is no longer stored
+anywhere, not in the chat state and not in the database, because each message is judged on its own.

@@ -89,11 +89,12 @@ So: **the graph answers *what* and *in what order*; the documents answer *how*, 
                         │  Titan Embeddings V2         extraction + eval judge)  │
                         └───────────────▲────────────────────────────────────────┘
                                         │
- Streamlit chat UI ──HTTP/SSE──► FastAPI ──► Strands Agent ──► Neo4j AuraDB
+ React web app ──HTTPS/SSE──► FastAPI ──► Strands Agent ──► Neo4j AuraDB
+ (Supabase sign-in)   (checks the sign-in pass)
  CLI (main_agent.py) ─────────────────────►  (tools + hooks)    (knowledge graph + vector index, read-only)
  Evaluation harness ──────────────────────►        │
-                                                   ├──► SQLite (memory, checklists, progress, tool log)
-                                                   └──► Session files (short-term memory)
+                                                   └──► App database: SQLite locally, Postgres in production
+                                                        (chats, memory, checklists, progress, tool log)
 
  Offline: 9 documents ──► Claude extracts the graph ──► human review ──► load graph + embeddings ──► Neo4j
 ```
@@ -145,14 +146,14 @@ User message ─► 1. Input guard ─► 2. Build context ─► 3. Agent loop 
    - a short **memory block** (what we already know about this user);
    - the recent conversation.
 3. **Agent loop.** Claude Haiku decides what to do, calls tools, reads the results, and repeats until
-   it can answer. The **11 tools**, grouped by purpose:
+   it can answer. The **12 tools**, grouped by purpose:
 
    | Group | Tools | Used for |
    |---|---|---|
    | **Retrieve** | `vector_search`, `get_requirements`, `get_dependencies`, `explain_path`, `query_graph` | Fees, forms, rules (documents); requirements and dependencies (graph); unusual graph questions (guarded text-to-Cypher) |
-   | **Plan** | `plan_steps` | The ordered checklist for this user, without the steps already done |
+   | **Plan** | `plan_steps` | The ordered checklist for one of the user's businesses, without the steps already done |
    | **Act** (need a "yes") | `save_checklist`, `update_progress`, `set_reminder` | Change the user's records |
-   | **Escalate and remember** | `handoff_to_human`, `remember_profile` | Pass to a person; remember a fact about the business |
+   | **Escalate and remember** | `handoff_to_human`, `remember_profile`, `add_business` | Pass to a person; remember a fact about a business; add another business |
 
 4. **Checks (hooks).** Small pieces of code that run around every turn and tool call, so the rules
    hold **whatever the model does**:
@@ -167,12 +168,32 @@ User message ─► 1. Input guard ─► 2. Build context ─► 3. Agent loop 
 
 ### 2.4 Memory
 
-| | Short-term memory | Long-term memory |
-|---|---|---|
-| **Belongs to** | One chat session (`session_id`) | One user (`user_id`) |
-| **Holds** | The conversation and pending confirmations | Profile (business type, state, structure, ...), completed steps, a 3-line summary of the last session |
-| **Stored in** | Session files on disk | SQLite |
-| **Special behaviour** | After 30 user turns, the last 12 messages are kept word for word and older ones become one rolling summary | Facts are saved the moment the user states them, so a new chat starts with an empty history but a full profile ("Welcome back, still zobo in Ibadan?") |
+Navi has four kinds of memory, each with its own job, size and level of trust
+([ADR 0018](docs/adr/0018-production-memory.md)):
+
+| | Working memory | Short-term memory | Long-term memory | Episodic memory |
+|---|---|---|---|---|
+| **Question it answers** | What am I looking at right now? | What have we said in this chat? | What do I know for sure about this user? | What happened last time? |
+| **Holds** | Rules, memory block, recent messages, fresh tool results | The whole chat and any action waiting for a "yes" | Each business's confirmed facts and finished steps, checklists, reminders | A three-line note per past chat |
+| **Lives for** | One reply | One chat | Months (until the retention limit) | Months (the last 3 are shown) |
+| **Stored in** | The model's context window | `chat_*` tables | `businesses`, `profile_facts`, `progress`, ... | `episodes` |
+| **Kept small by** | Old tool results trimmed after each turn, prompt caching | At ~24,000 tokens, the last 5 turns stay word for word and older ones are summarised | Only a fixed list of business fields can be stored | Three lines each |
+
+The rules that make it production-ready:
+- **Everything lives in a real database.** SQLite on your own computer; set `DATABASE_URL` to a Postgres
+  address in production, so chats and memory survive restarts and several servers can share them. Tables
+  are created and upgraded by numbered migrations.
+- **One user, several businesses.** Each business has its own profile, checklist, progress and reminders.
+  If one message mentions two businesses, Navi plans both, under separate headings.
+- **Facts are confirmed, sourced and never silently overwritten.** Each fact records where it came from and
+  when, every change is kept in a history, and a contradicting fact makes Navi ask the user first.
+- **Notes never override facts.** The AI-written notes from past chats are labelled as possibly incomplete.
+- **Users control their data** (NDPA): the **My data** page (`GET /me/memory`, `/me/export`) shows
+  everything, and `DELETE /me` erases it. Users not seen for `MEMORY_RETENTION_DAYS` (365) are deleted
+  automatically.
+- **Old businesses retire on their own.** A business nobody has worked on for 6 months becomes
+  *inactive*: kept, but shown to Navi as one line, and brought straight back if the user mentions it.
+  After 18 months unused it's deleted. A business with an upcoming reminder is never retired.
 
 ### 2.5 Key design decisions
 
@@ -182,11 +203,12 @@ Each decision is explained in full (the problem, the options, why, and the trade
 | Decision | Why |
 |---|---|
 | **Strands Agents + Amazon Bedrock** | Bedrock was the available provider; Strands gives the agent loop, streaming, sessions and hooks ([0001](docs/adr/0001-strands-agents-on-amazon-bedrock.md)) |
-| **One agent with 11 tools** | Cheaper and faster than several agents, and confirmations stay in one conversation ([0002](docs/adr/0002-one-agent-with-tools.md)) |
+| **One agent with 12 tools** | Cheaper and faster than several agents, and confirmations stay in one conversation ([0002](docs/adr/0002-one-agent-with-tools.md)) |
 | **Graph and vectors in one Neo4j** | One query can use both; citations come from the graph; a fair baseline ([0003](docs/adr/0003-graph-and-vectors-in-one-neo4j.md)) |
 | **LLM extraction, then human review** | Fast to build, and the brief requires a hand check ([0004](docs/adr/0004-llm-extraction-then-human-review.md)) |
 | **Fixed graph queries first** | Predictable and safe; text-to-Cypher is a guarded, read-only extra ([0005](docs/adr/0005-fixed-graph-tools-first.md)) |
-| **The agent only writes to SQLite** | Neo4j stays read-only, so the knowledge can never be damaged ([0006](docs/adr/0006-sqlite-for-everything-the-agent-writes.md)) |
+| **The agent only writes to its own app database** | Neo4j stays read-only, so the knowledge can never be damaged ([0006](docs/adr/0006-sqlite-for-everything-the-agent-writes.md)) |
+| **Four kinds of memory, in Postgres for production** | Memory survives restarts, handles several businesses per user, and keeps facts apart from AI-written notes ([0018](docs/adr/0018-production-memory.md)) |
 | **Rules enforced in code (hooks)** | A prompt can be ignored or bypassed; code cannot ([0009](docs/adr/0009-enforce-rules-in-code-with-hooks.md), [0010](docs/adr/0010-confirm-before-write.md)) |
 | **Claude Haiku for the agent, Sonnet for extraction and judging** | Low running cost, with accuracy where it matters ([0014](docs/adr/0014-model-choice-and-cost-control.md)) |
 
@@ -276,12 +298,29 @@ Testing found real bugs, which were fixed before the final run:
 - **An AWS account with Amazon Bedrock access** to Claude Haiku 4.5, Claude Sonnet 4.5 and
   Titan Text Embeddings V2 (use the `us.` inference-profile IDs for Claude).
 - **A Neo4j AuraDB Free instance** (its URI and password).
+- **Node.js** (the LTS version) for the React web app.
+- **A Postgres database** for chats and memory, for example a free **Neon** project (or leave
+  `DATABASE_URL` empty to use a local SQLite file).
+- **A Supabase project** for sign-in (email and password). For a demo, turn off "Confirm email" under
+  Authentication → Sign In / Providers → Email, so testers can sign up instantly.
 
 ### 4.2 Install and configure (Windows PowerShell)
 ```powershell
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env      # then fill in AWS, the model IDs and Neo4j
+```
+In `.env`, also set:
+- `DATABASE_URL`: your Postgres address (for example Neon's `dev` branch); the tables are created on first start.
+- `SUPABASE_URL`: your Supabase project address (`https://<project-id>.supabase.co`). Without it the API
+  refuses every request except `/health`.
+- `ALLOWED_ORIGINS`: the website addresses allowed to call the API (default `http://localhost:5173`).
+
+Then set up the web app:
+```powershell
+cd frontend
+npm install
+Copy-Item .env.example .env.local   # then fill in VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY
 ```
 All settings are checked at start-up. If anything is missing or wrong, one message lists every
 variable to fix.
@@ -296,13 +335,18 @@ python -m ingestion.load_graph --reset       # load graph + embedded chunks into
 ### 4.4 Run the agent
 ```powershell
 uvicorn server:app --port 8000               # terminal 1: the API
-streamlit run ui/streamlit_app.py            # terminal 2: the web chat
+npm --prefix frontend run dev                # terminal 2: the web app, at http://localhost:5173
 python main_agent.py --user ada-ibadan       # or chat in the terminal, no server needed
 ```
-- **The web UI** has a Claude-style sidebar: **New chat**, your past chats (click one to reopen it),
-  your saved checklist, and a collapsed **Developer settings** section (user ID, baseline/GraphRAG
-  mode, and a token and latency display).
-- **Start clean** before a demo (deletes chats, logs and memory, but not the graph):
+- **The web app** (React + TypeScript + Tailwind) starts with a sign-in page. After signing in, a
+  Claude-style sidebar has **New chat**, your past chats grouped by date, your saved checklists (one per
+  business), **My data** (see, download or delete what Navi remembers), and **Developer settings**
+  (baseline/GraphRAG mode, and a tools, latency and token display). Replies stream word by word, and a
+  checklist reply can show its step diagram.
+- **Several people can test at once.** Each person signs in with their own email; the API takes their
+  identity from the Supabase sign-in pass, so nobody can see anyone else's chats or memory.
+- **Start clean** before a demo (deletes chats, logs and memory, but not the graph). It only works on
+  a local SQLite setup and refuses to run when `DATABASE_URL` is set:
   `python -m scripts.reset_local --yes`
 
 **Demo scenarios to try:**
@@ -340,9 +384,9 @@ agent/                 the agent (modular AI framework)
   core.py              builds the agent and streams one turn
   output_filter.py     removes internal IDs from replies while streaming
   llm/                 Bedrock models and Titan embeddings
-  storage/             SQLite (everything the agent writes) and Neo4j (read-only knowledge)
+  storage/             app database (SQLite or Postgres, with migrations), chat history, Neo4j (read-only)
   knowledge/           graph planner, vector search, citations, text-to-Cypher guard
-  memory/              short-term, long-term, rolling summary, session history
+  memory/              short-term, long-term (per business), episodic notes, rolling summary
   tools/               one file per tool, registered by purpose in __init__.py
   hooks/               input guard, confirmation, audit, grounding, compaction
 ingestion/             parse documents, extract the graph, load Neo4j
@@ -350,10 +394,12 @@ evaluation/            datasets, judge, runner, results, EXPERIMENT_REPORT.md
 knowledge_base/        the 9 source documents
 data/graph/            the extracted and reviewed graph
 docs/adr/              Architecture Decision Records
-server.py              FastAPI API (streaming /chat, sessions, checklist, health)
-ui/streamlit_app.py    web chat
+server.py              FastAPI API (streaming /chat, sessions, checklists, memory, export/delete, health)
+auth.py                checks the Supabase sign-in pass on every request
+frontend/              React + TypeScript + Tailwind web app (sign-in, chat, sidebar, My data)
 main_agent.py          command-line chat
-scripts/reset_local.py start from a clean slate
+scripts/reset_local.py start from a clean slate (local SQLite only)
+scripts/purge_old_data.py delete users past the retention period (schedule daily)
 ```
 
 ### Data and compliance
@@ -361,7 +407,18 @@ scripts/reset_local.py start from a clean slate
   set of business fields is stored about a user (NDPA).
 - **Freshness.** Every source shows the date its information was read. Fees and rules change, so the
   agent always tells users to confirm with the regulator.
-- **Logging.** Every tool call is kept in SQLite (`tool_calls`) and in `logs/audit_<session>.jsonl`.
+- **Logging.** Every tool call is kept in the app database (`tool_calls`) and in `logs/audit_<session>.jsonl`.
+- **Retention and erasure.** Users can see, export or delete everything Navi holds about them on the
+  **My data** page, and inactive users are deleted after `MEMORY_RETENTION_DAYS`.
+- **Access control.** Every route except `/health` needs a valid Supabase sign-in pass, and the user's
+  identity comes from that pass, never from the browser. Only the addresses in `ALLOWED_ORIGINS` may call
+  the API from a browser, each user may send at most `CHAT_MESSAGES_PER_MINUTE` messages a minute, and
+  error details stay in the server log instead of being shown to users.
+- **Prompt-injection defence** ([ADR 0020](docs/adr/0020-prompt-injection-defence.md)). Every message is
+  screened by an Amazon Bedrock Guardrail (prompt-attack filter) before Navi reads it; a suspected attack is
+  flagged with a warning rather than refused, because the filter also flags some genuine questions. The real
+  protection is in code: records change only after a genuine "yes", identity comes from the sign-in, and the
+  knowledge graph is read-only. Create the guardrail once with `python -m scripts.create_guardrail`.
 
 ---
 
@@ -370,5 +427,5 @@ scripts/reset_local.py start from a clean slate
 | Document | What it covers |
 |---|---|
 | [evaluation/EXPERIMENT_REPORT.md](evaluation/EXPERIMENT_REPORT.md) | The full key-experiment write-up: setup, scoring, findings, limitations |
-| [docs/adr/](docs/adr/README.md) | 17 Architecture Decision Records: why each part was built the way it is |
+| [docs/adr/](docs/adr/README.md) | 20 Architecture Decision Records: why each part was built the way it is |
 | [Eraser diagrams](https://app.eraser.io/workspace/oZNSA2VMj1YHSIuG4kwz) | The system and agent architecture diagrams |

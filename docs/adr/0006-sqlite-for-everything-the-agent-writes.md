@@ -1,6 +1,6 @@
 # ADR 0006: Store everything the agent writes in SQLite, separate from the knowledge
 
-**Status:** Accepted · **Date:** 2026-10-26
+**Status:** Accepted · **Date:** 2026-10-26 · Storage engine updated by [0018](0018-production-memory.md): SQLite locally, Postgres in production
 
 ## Context
 
@@ -52,9 +52,9 @@ and they're awkward to query.
 
 The design is safe, private, simple and easy to query. The limit is that SQLite works on a single
 machine. A production version running on many servers would need a hosted database, but that is a
-contained change, because all storage goes through `sqlite_store.py`.
+contained change, because all storage goes through `store.py` (formerly `sqlite_store.py`).
 
 ## Where to find it
 
-Every table, and the functions that read and write them, are in `agent/storage/sqlite_store.py`.
+Every table, and the functions that read and write them, are in `agent/storage/store.py` (it was called `sqlite_store.py` before ADR 0018).
 `agent/storage/neo4j_client.py` gives the agent read-only access; only ingestion writes to Neo4j.

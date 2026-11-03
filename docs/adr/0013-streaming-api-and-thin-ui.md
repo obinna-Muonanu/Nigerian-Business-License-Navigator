@@ -1,6 +1,6 @@
 # ADR 0013: A streaming FastAPI server, with Streamlit as a thin client
 
-**Status:** Accepted · **Date:** 2026-10-26
+**Status:** Accepted · **Date:** 2026-10-26 · The Streamlit client was replaced by a React app with sign-in in [0019](0019-react-frontend-and-supabase-sign-in.md); the streaming API stays
 
 ## Context
 

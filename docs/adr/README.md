@@ -36,17 +36,20 @@ Every ADR has the status "Accepted", because they all describe what was actually
 ### Memory and safety
 | # | Decision |
 |---|---|
-| [0007](0007-two-tier-memory.md) | Two kinds of memory: short-term per session, long-term per user |
-| [0008](0008-rolling-summary-conversation-manager.md) | Our own conversation manager: after 30 turns, keep the last 12 messages and summarise the rest |
+| [0007](0007-two-tier-memory.md) | Two kinds of memory: short-term per session, long-term per user (replaced by 0018) |
+| [0008](0008-rolling-summary-conversation-manager.md) | Our own conversation manager: summarise older messages and keep recent ones word for word (now: at ~24,000 tokens, keep the last 5 turns; see 0018) |
 | [0009](0009-enforce-rules-in-code-with-hooks.md) | Enforce the brief's rules in code (hooks), not only in the prompt |
 | [0010](0010-confirm-before-write.md) | How "confirm before acting" works |
 | [0011](0011-footnote-citations-and-hidden-ids.md) | Cite sources as numbered footnotes, and never show internal IDs |
 | [0012](0012-reply-language-follows-each-message.md) | Reply in the language of each message |
+| [0018](0018-production-memory.md) | Production memory: four kinds of memory, several businesses per user, kept in Postgres |
 
 ### Delivery, cost and quality
 | # | Decision |
 |---|---|
-| [0013](0013-streaming-api-and-thin-ui.md) | A streaming FastAPI server, with Streamlit as a thin client |
+| [0013](0013-streaming-api-and-thin-ui.md) | A streaming FastAPI server, with Streamlit as a thin client (client replaced by 0019) |
+| [0019](0019-react-frontend-and-supabase-sign-in.md) | A React + TypeScript web app, with Supabase sign-in checked by the API |
+| [0020](0020-prompt-injection-defence.md) | Defend against prompt injection in layers, with a Bedrock Guardrail that flags rather than blocks |
 | [0014](0014-model-choice-and-cost-control.md) | Claude Haiku for the agent, Sonnet for extraction and judging, plus caching |
 | [0015](0015-configuration-with-pydantic-settings.md) | Read configuration through one validated Pydantic settings model |
 | [0016](0016-modular-layout-one-tool-per-file.md) | A modular code layout, with one file per tool |

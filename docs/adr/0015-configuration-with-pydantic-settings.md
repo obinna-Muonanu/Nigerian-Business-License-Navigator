@@ -19,7 +19,7 @@ place in the project that reads environment variables. Everything else calls `ge
 
 The class converts and checks every value when the app starts. `AGENT_MODEL_ID`, `NEO4J_URI` and
 `NEO4J_PASSWORD` are required. Numbers have to be in range: `MIN_RELEVANCE` between 0 and 1, `TOP_K`
-between 1 and 20, and `KEEP_RECENT_MESSAGES` at least 2. `EMBED_DIMENSIONS` must be 256, 512 or
+between 1 and 20, and `KEEP_RECENT_TURNS` at least 1. `EMBED_DIMENSIONS` must be 256, 512 or
 1024, the sizes Titan supports. And `NEO4J_URI` has to start with `neo4j://`, `neo4j+s://` or
 `bolt://`.
 
