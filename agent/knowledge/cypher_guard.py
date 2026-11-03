@@ -6,7 +6,12 @@ Most questions are answered with ready-made database questions written in advanc
 "which regulator issues the most permits?", the AI writes a fresh one. Because the AI could get it wrong, this
 file checks it several ways first: it must only read data, never change it; it must only mention things that
 exist in our database; and the database must confirm it's valid. Then it's run in read-only mode with a time
-limit. If anything fails, Navi is told to fall back to the ready-made questions instead.
+limit.
+
+If the first query fails (it's rejected, has an error, or finds nothing), the AI is shown exactly what went wrong
+and gets one more try. Most failures are a typo or a wrong name, which it can fix. If the second try fails too,
+Navi is told the honest options: use the ready-made tools only if they can actually answer the question (even
+partly), and otherwise tell the user it can't answer this one and offer a human adviser. It must never guess.
 """
 
 import re
@@ -67,36 +72,48 @@ def validate(cypher: str) -> tuple[bool, str]:
     return True, query
 
 
-def generate_cypher(question: str) -> CypherQuery:
+def generate_cypher(question: str, failed: tuple[str, str] | None = None) -> CypherQuery:
     """Ask the fast model to write one query for the question, in a fixed format.
 
     This uses a small, separate agent with no tools. Its only job is turning a question into a query,
-    and using the fast model keeps this extra call cheap.
+    and using the fast model keeps this extra call cheap. On a second try, `failed` holds the previous query
+    and what went wrong with it, so the model can correct its own mistake instead of starting from scratch.
     """
+    prompt = CYPHER_PROMPT.format(question=question)
+    if failed:
+        query, problem = failed
+        prompt += (f"\nYour previous query did not work:\n{query}\nProblem: {problem}\n"
+                   "Write a corrected query. Check the labels, relationship directions and exact property values "
+                   "against the schema above.")
     writer = Agent(model=build_fast_model(), callback_handler=None, system_prompt="You write Neo4j Cypher.")
-    result = writer(CYPHER_PROMPT.format(question=question), structured_output_model=CypherQuery)
+    result = writer(prompt, structured_output_model=CypherQuery)
     return result.structured_output
 
 
-def answer_with_cypher(question: str) -> dict:
-    """Run the whole process for one question. It never crashes: if something fails, it returns a fallback message.
+# How many queries the AI may write for one question: the first, plus one corrected attempt.
+MAX_ATTEMPTS = 2
 
-    Returning a status instead of raising an error keeps the agent running. The model reads the reason
-    and switches to the fixed tools, which is exactly the fallback the brief's stretch goal asks for.
-    """
-    fallback = ("Use the fixed graph tools instead (get_requirements via plan_steps, "
-                "get_dependencies, explain_path).")
+# What Navi is told when no query worked. The ready-made tools only help if they can genuinely answer the question,
+# so the instruction says exactly that, and gives the honest way out when they can't.
+NEXT_STEP = ("The graph query could not answer this. Use the fixed tools (plan_steps, get_requirements, "
+             "get_dependencies, explain_path, vector_search) ONLY if their results can actually answer the question, "
+             "fully or in part, and say which part if it's partial. If they can't, tell the user plainly that you "
+             "can't answer this particular question, and offer a human adviser. Never estimate, guess or invent "
+             "numbers or names.")
 
-    # Step 1: ask the model for a query. If the model fails or its answer can't be read, fall back.
+
+def _attempt(question: str, failed: tuple[str, str] | None) -> dict:
+    """Write, check and run one query. Returns the rows, or a status saying what went wrong and why."""
+    # Step 1: ask the model for a query.
     try:
-        generated = generate_cypher(question)
+        generated = generate_cypher(question, failed)
     except Exception as exc:
-        return {"status": "QUERY_FAILED", "reason": f"Could not generate a query: {exc}", "fallback": fallback}
+        return {"status": "QUERY_FAILED", "reason": f"Could not generate a query: {exc}", "cypher": ""}
 
     # Step 2: check the query. If it's rejected, we still return it, which helps when reading the audit log later.
     ok, checked = validate(generated.cypher)
     if not ok:
-        return {"status": "QUERY_REJECTED", "reason": checked, "cypher": generated.cypher, "fallback": fallback}
+        return {"status": "QUERY_REJECTED", "reason": checked, "cypher": generated.cypher}
 
     # Steps 3 and 4: have Neo4j check the syntax without running anything, then run the query read-only
     # with a short time limit.
@@ -104,10 +121,36 @@ def answer_with_cypher(question: str) -> dict:
         neo4j_client.explain(checked)
         rows = neo4j_client.read(checked, timeout_s=5.0)
     except Exception as exc:
-        return {"status": "QUERY_FAILED", "reason": str(exc)[:300], "cypher": checked, "fallback": fallback}
+        return {"status": "QUERY_FAILED", "reason": str(exc)[:300], "cypher": checked}
 
-    # Step 5: an empty result usually means the query was wrong, not that there's really nothing to find,
-    # so we suggest the fixed tools instead.
+    # Step 5: an empty result usually means the query was written wrongly (a misspelt name, an arrow pointing the
+    # wrong way), not that there's really nothing to find, so it's treated as a failure worth correcting.
     if not rows:
-        return {"status": "NO_ROWS", "cypher": checked, "fallback": fallback}
+        return {"status": "NO_ROWS", "reason": "The query ran but returned no rows.", "cypher": checked}
+    # Step 6: a top result with empty values usually means a calculation didn't work (for example a path length
+    # that came out as nothing and got sorted to the top). Presenting that as the answer would mislead the user,
+    # so it's treated as a failure worth correcting too.
+    if any(value is None for value in rows[0].values()):
+        return {"status": "EMPTY_VALUES", "cypher": checked,
+                "reason": ("The top row has empty (null) values, so the calculation probably didn't work. Filter "
+                           "them out with WHERE ... IS NOT NULL and check how the value is computed.")}
     return {"status": "ok", "cypher": checked, "explanation": generated.explanation, "rows": rows[:MAX_ROWS]}
+
+
+def answer_with_cypher(question: str) -> dict:
+    """Run the whole process for one question, with one corrected retry. It never crashes.
+
+    Returning a status instead of raising an error keeps the agent running: the model reads what happened and
+    what to do next. Every attempt's query and problem are kept in the result, which makes the audit log useful
+    when checking why a question couldn't be answered.
+    """
+    attempts: list[dict] = []
+    failed: tuple[str, str] | None = None
+    for _ in range(MAX_ATTEMPTS):
+        result = _attempt(question, failed)
+        if result["status"] == "ok":
+            return {**result, "attempts": len(attempts) + 1}
+        attempts.append({k: result[k] for k in ("status", "reason", "cypher")})
+        # Show the model its own query and the exact problem, so the next attempt can fix it.
+        failed = (result["cypher"], result["reason"])
+    return {"status": attempts[-1]["status"], "attempts": attempts, "next": NEXT_STEP}

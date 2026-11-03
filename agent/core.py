@@ -21,15 +21,17 @@ from collections.abc import AsyncIterator
 from typing import Any, Literal
 
 from strands import Agent
+from strands.tools.executors import SequentialToolExecutor
 from strands.types.exceptions import MaxTokensReachedException
 
 from agent.hooks import build_hooks
 from agent.hooks.input_guard import mask_pii
 from agent.llm import build_agent_model
+from agent.llm.guardrail import screen_message
 from agent.memory import LongTermMemory, build_conversation_manager, build_session_manager, maybe_summarise, seed_state
 from agent.output_filter import RequirementIdFilter
 from agent.prompts import BASELINE_ADDENDUM, STATIC_SYSTEM_PROMPT, render_memory_block
-from agent.storage import sqlite_store
+from agent.storage import store
 from agent.tools import BASELINE_TOOLS, GRAPHRAG_TOOLS
 
 # The two versions of the agent compared in the key experiment. Using a fixed list of allowed values
@@ -39,7 +41,9 @@ Mode = Literal["graphrag", "baseline"]
 
 def build_agent(user_id: str, session_id: str, mode: Mode = "graphrag") -> Agent:
     """Create the agent for one user's chat, or pick up where a saved chat left off."""
-    # Load what we remember about this user first, because it goes into the system prompt.
+    # Note that the user is active (this is what the retention rule checks), then load what we remember about
+    # them, because it goes into the system prompt.
+    store.touch_user(user_id)
     memory = LongTermMemory.load(user_id)
 
     # The system prompt has three parts: the fixed rules, a cache marker, and the user's memory block.
@@ -49,19 +53,25 @@ def build_agent(user_id: str, session_id: str, mode: Mode = "graphrag") -> Agent
     system_prompt = [
         {"text": static},
         {"cachePoint": {"type": "default"}},
-        {"text": render_memory_block(memory.profile, memory.completed, memory.summary)},
+        {"text": render_memory_block(memory)},
     ]
 
     # Here everything from the architecture diagram gets wired together: the model, the prompt, the tools,
-    # the safety hooks and both halves of short-term memory. The session manager saves the chat to disk,
-    # and the conversation manager summarises it once it gets long. We stream through stream_async, so
-    # Strands' own printing callback is switched off. The trace attributes label each turn with the user,
-    # chat and mode, which makes it easy to find a turn later when debugging.
+    # the safety hooks and both halves of short-term memory. The session manager saves the chat to the
+    # database after every message, and the conversation manager summarises it once it gets long. We stream
+    # through stream_async, so Strands' own printing callback is switched off. The trace attributes label each
+    # turn with the user, chat and mode, which makes it easy to find a turn later when debugging.
+    #
+    # Tools run one after another, in the order the model asked for them. By default Strands runs them all at
+    # once, and then a checklist request could run before the facts saved in the same step had reached the
+    # database. The planner saw "details missing", and the model had to apologise and try again. Running them
+    # in order costs a fraction of a second, because saving a fact is quick.
     agent = Agent(
         name="license-navigator",
         model=build_agent_model(),
         system_prompt=system_prompt,
         tools=GRAPHRAG_TOOLS if mode == "graphrag" else BASELINE_TOOLS,
+        tool_executor=SequentialToolExecutor(),
         hooks=build_hooks(session_id),
         session_manager=build_session_manager(session_id),
         conversation_manager=build_conversation_manager(),
@@ -71,14 +81,15 @@ def build_agent(user_id: str, session_id: str, mode: Mode = "graphrag") -> Agent
     # We fill in the agent's starting state only after it's built. While the Agent is being created, the
     # session manager restores any state saved from an earlier visit, and that would overwrite anything
     # we had set beforehand.
-    seed_state(agent, user_id, session_id, memory)
+    seed_state(agent, user_id, session_id)
     # Remember the mode with the chat, so the UI can list GraphRAG and baseline chats separately.
     agent.state.set("mode", mode)
     return agent
 
 
 TITLE_MAX_CHARS = 48
-
+# Text this short, written just before a tool call, is treated as the model narrating its own work and taken back.
+NARRATION_MAX_CHARS = 400
 
 def session_title(first_message: str) -> str:
     """Make a short title for the chat list from the first message.
@@ -97,7 +108,7 @@ def session_title(first_message: str) -> str:
 class AgentPool:
     """Keeps recently used agents in memory, one per chat.
 
-    Rebuilding an agent from disk on every message would be slow, so we keep the busy ones ready to go.
+    Rebuilding an agent from the database on every message would be slow, so we keep the busy ones ready to go.
     That also preserves the in-memory trimming of old tool results. When there are too many, the one
     used least recently is dropped. Each chat also gets its own lock, so two messages for the same chat
     can never run at the same time.
@@ -122,7 +133,7 @@ class AgentPool:
                 self._agents.move_to_end(key)
                 return self._agents[key]
             # Otherwise build it, and if that takes us over the limit, drop the least recently used one.
-            # Nothing is lost when we drop it, because its chat is already saved on disk.
+            # Nothing is lost when we drop it, because its chat is already saved in the database.
             agent = build_agent(user_id, session_id, mode)
             self._agents[key] = agent
             if len(self._agents) > self.max_agents:
@@ -136,9 +147,17 @@ class AgentPool:
         return self._locks.setdefault(f"{mode}:{session_id}", asyncio.Lock())
 
     def drop(self, session_id: str, mode: Mode = "graphrag") -> None:
-        # Called when a chat ends, to free the memory. The chat's files stay on disk for the record.
+        # Called when a chat ends, to free the memory. The chat itself stays in the database for the record.
         with self._guard:
             self._agents.pop(f"{mode}:{session_id}", None)
+
+    def drop_user(self, user_id: str) -> None:
+        # Called when a user's data is deleted. Any of their chats still held in memory must go too, or the
+        # next message would carry on from the deleted conversation and write some of it back.
+        with self._guard:
+            for key in [k for k, a in self._agents.items() if a.state.get("user_id") == user_id]:
+                self._agents.pop(key, None)
+                self._locks.pop(key, None)
 
 
 def _usage_snapshot(agent: Agent) -> dict[str, int]:
@@ -157,6 +176,8 @@ async def stream_turn(agent: Agent, message: str) -> AsyncIterator[dict[str, Any
 
     These are the kinds of event it sends:
         {"type": "text", "text": "..."}            a piece of the reply
+        {"type": "retract", "chars": 42}            remove the last 42 characters of text: it was Navi narrating
+                                                    its own work just before using a tool
         {"type": "tool", "name": "plan_steps"}      a tool has started (for a "thinking" indicator)
         {"type": "graph", "graph": {...}}           the steps and links to draw as a diagram
         {"type": "warning", "text": "..."}          a note from the grounding check
@@ -168,9 +189,24 @@ async def stream_turn(agent: Agent, message: str) -> AsyncIterator[dict[str, Any
     started = time.perf_counter()
     before = _usage_snapshot(agent)
     # Record the chat for the sidebar. On the first message this creates it with its title; after that
-    # it just updates when the chat was last active.
-    sqlite_store.touch_session(state.get("user_id"), state.get("session_id"),
-                               state.get("mode") or "graphrag", session_title(message))
+    # it just updates when the chat was last active. We also note the user as active, which keeps their
+    # memory safe from the retention clean-up for as long as they keep visiting.
+    store.touch_user(state.get("user_id"))
+    store.touch_session(state.get("user_id"), state.get("session_id"),
+                        state.get("mode") or "graphrag", session_title(message))
+
+    # Screen the message for prompt-injection attacks before Navi reads it (see agent/llm/guardrail.py). ID and
+    # card numbers are hidden first, so they never leave in plain form. The check is a network call, so it runs
+    # in a background thread to keep the server free for other users meanwhile. A flagged message isn't refused:
+    # the input guard attaches a warning to it instead (see agent/hooks/input_guard.py), because the filter also
+    # flags some innocent questions. Every flag goes in the audit log.
+    masked, _ = mask_pii(message)
+    verdict = await asyncio.to_thread(screen_message, masked)
+    state.set("injection_suspected", verdict.reason if verdict.flagged else None)
+    if verdict.flagged:
+        store.log_tool_call(state.get("user_id"), state.get("session_id"), "input_guardrail",
+                            {"message": masked[:500]}, "flagged", verdict.reason, None)
+
     # Clear last turn's diagram, so an old graph never shows up under a new answer. We also note the
     # current hand-off ticket so we can spot a new one being created this turn.
     state.set("last_graph", None)
@@ -183,11 +219,18 @@ async def stream_turn(agent: Agent, message: str) -> AsyncIterator[dict[str, Any
     # read the result, repeat cycle, and gives us events as they happen. Events with "data" are pieces
     # of reply text. We pass each one through the ID filter and send on whatever it releases. The filter
     # only holds back the last few characters, so the reply still streams smoothly.
+    # How much text has been sent since the last tool started (or since the turn began). If the model writes a
+    # short line and then immediately uses a tool, that line is almost always it narrating its own work ("Let me
+    # save that…", "Now let me build your checklist:"), which reads robotic. The app already shows what Navi is
+    # doing while a tool runs, so we take such a line back with a "retract" event. Real answers are long, and
+    # anything longer than NARRATION_MAX_CHARS is always kept.
+    segment_chars = 0
     try:
         async for event in agent.stream_async(message):
             if "data" in event:
                 visible = id_filter.feed(event["data"])
                 if visible:
+                    segment_chars += len(visible)
                     yield {"type": "text", "text": visible}
             # The same tool call shows up many times while the model is still writing its inputs, so we
             # keep track of the ones we've already announced and only mention each one once.
@@ -198,7 +241,11 @@ async def stream_turn(agent: Agent, message: str) -> AsyncIterator[dict[str, Any
                 # indicator and everything stays in the right order.
                 held = id_filter.flush()
                 if held:
+                    segment_chars += len(held)
                     yield {"type": "text", "text": held}
+                if 0 < segment_chars <= NARRATION_MAX_CHARS:
+                    yield {"type": "retract", "chars": segment_chars}
+                segment_chars = 0
                 yield {"type": "tool", "name": tool_use.get("name")}
     except MaxTokensReachedException:
         # The reply ran into the model's length limit. Strands has already saved the partial reply in the
@@ -230,18 +277,20 @@ async def stream_turn(agent: Agent, message: str) -> AsyncIterator[dict[str, Any
     after = _usage_snapshot(agent)
     usage = {k: after[k] - before[k] for k in after}
     latency_ms = round((time.perf_counter() - started) * 1000, 1)
-    sqlite_store.log_turn(state.get("user_id"), state.get("session_id"), usage, latency_ms)
+    store.log_turn(state.get("user_id"), state.get("session_id"), usage, latency_ms)
     state.set("turns", int(state.get("turns") or 0) + 1)
     yield {"type": "done", "usage": usage, "latency_ms": latency_ms}
 
 
 def after_turn(agent: Agent, force_summary: bool = False) -> None:
-    """Do the background work after a reply: refresh the user's long-term summary every few turns.
+    """Do the background work after a reply: refresh this chat's note (episodic memory) every few turns.
 
     This is kept separate from stream_turn so the server can run it after the reply has already gone
     out, and the user never waits for it.
     """
-    maybe_summarise(agent.state.get("user_id"), agent.messages, int(agent.state.get("turns") or 0), force=force_summary)
+    state = agent.state
+    maybe_summarise(state.get("user_id"), state.get("session_id"), agent.messages, int(state.get("turns") or 0),
+                    force=force_summary)
 
 
 async def run_turn(agent: Agent, message: str) -> dict[str, Any]:
@@ -255,6 +304,10 @@ async def run_turn(agent: Agent, message: str) -> dict[str, Any]:
     async for event in stream_turn(agent, message):
         if event["type"] == "text":
             reply.append(event["text"])
+        elif event["type"] == "retract":
+            # Take back the narration line, exactly as the website does.
+            text = "".join(reply)
+            reply = [text[: len(text) - event["chars"]].rstrip()]
         elif event["type"] == "tool":
             tools.append(event["name"])
         elif event["type"] in ("graph", "warning", "handoff", "done"):
