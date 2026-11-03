@@ -26,6 +26,7 @@ from agent.config import get_settings
 from agent.llm import build_extraction_model
 from agent.prompts import EXTRACTION_PROMPT
 from agent.schemas import ExtractedDocumentGraph
+from ingestion.canonical import unlisted
 from ingestion.parse_docs import Document, load_documents, must_be_done_after_ids
 
 
@@ -52,9 +53,9 @@ def extract_document(doc: Document) -> ExtractedDocumentGraph:
 def review_report(docs: list[Document], graphs: list[ExtractedDocumentGraph]) -> list[str]:
     """Compare what Claude extracted with the documents themselves, and list anything a person should check.
 
-    It looks for four kinds of problem: requirements Claude skipped, dependencies that don't match the
-    document's "Must be done after" line, dependencies pointing at requirements that don't exist, and loops
-    in the dependencies.
+    It looks for five kinds of problem: requirements Claude skipped, dependencies that don't match the
+    document's "Must be done after" line, regulator or document names that aren't on the standard-name list,
+    dependencies pointing at requirements that don't exist, and loops in the dependencies.
     """
     issues: list[str] = []
     extracted = {r.id: r for g in graphs for r in g.requirements}
@@ -76,6 +77,12 @@ def review_report(docs: list[Document], graphs: list[ExtractedDocumentGraph]) ->
                 issues.append(f"[dependency] {rid}: text lists {sorted(rule_ids - llm_ids)} but the model did not")
             if llm_ids - rule_ids:
                 issues.append(f"[dependency] {rid}: model added {sorted(llm_ids - rule_ids)} (check the text supports it)")
+
+    # Names that aren't on the standard-name list (data/graph/canonical_names.json). Without an entry, a new
+    # spelling of an existing regulator or document would become a duplicate node, so a person adds it first.
+    for name in unlisted([r.regulator for r in extracted.values()],
+                         [d for r in extracted.values() for d in r.documents]):
+        issues.append(f"[new name]   {name} is not in canonical_names.json; add it with its standard name")
 
     # Third, dependencies pointing at requirements that don't exist. The loader would quietly drop those, so we
     # flag them here. We also flag any requirement that isn't linked to a business type.

@@ -30,6 +30,7 @@ Every ADR has the status "Accepted", because they all describe what was actually
 | [0002](0002-one-agent-with-tools.md) | Use one agent with tools, not several agents |
 | [0003](0003-graph-and-vectors-in-one-neo4j.md) | Keep the knowledge graph and the vector search in one Neo4j database |
 | [0004](0004-llm-extraction-then-human-review.md) | Build the graph with an LLM, then check it by hand |
+| [0021](0021-standard-names-in-the-graph.md) | Give every regulator and required document one standard name |
 | [0005](0005-fixed-graph-tools-first.md) | Use fixed graph queries first; text-to-Cypher only as a guarded extra |
 | [0006](0006-sqlite-for-everything-the-agent-writes.md) | Store everything the agent writes in SQLite, separate from the knowledge |
 

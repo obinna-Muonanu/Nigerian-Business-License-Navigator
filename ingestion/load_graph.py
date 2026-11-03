@@ -24,6 +24,7 @@ from agent.knowledge.retrieval_service import VECTOR_INDEX
 from agent.llm import embed_text
 from agent.schemas import BUSINESS_TYPE_NAMES, STATES, ExtractedDocumentGraph
 from agent.storage import neo4j_client
+from ingestion.canonical import document_name, regulator_name
 from ingestion.parse_docs import chunk_document, load_documents
 
 # These rules stop duplicate nodes. Two "R01" nodes, for example, would split the chain of dependencies in two.
@@ -63,12 +64,14 @@ MATCH (b:BusinessType {code: row.business_type}), (r:Requirement {id: row.id})
 MERGE (b)-[rq:REQUIRES {condition: row.condition}]->(r)
 """
 
-# This links each requirement to the documents the applicant has to provide.
+# This links each requirement to the documents the applicant has to provide. The document node has the standard
+# name (shared by every step that needs it); the link keeps the source's exact wording for this step in `details`.
 UPSERT_DOCUMENTS_NEEDED = """
 UNWIND $rows AS row
 MATCH (r:Requirement {id: row.id})
 MERGE (d:RequiredDocument {name: row.document})
-MERGE (r)-[:NEEDS_DOCUMENT]->(d)
+MERGE (r)-[n:NEEDS_DOCUMENT]->(d)
+SET n.details = row.details
 """
 
 # This adds the "must come after" links, each with its reason. They're loaded only once every requirement
@@ -194,10 +197,18 @@ def load(reset: bool, unreviewed: bool) -> None:
     for graph in graphs:
         for r in graph.requirements:
             states = STATES if "ALL" in r.applies_in else [st for st in r.applies_in if st in STATES]
+            # Regulators and documents get their standard names (see ingestion/canonical.py), so the same thing is
+            # one node, not several spellings. Each document link keeps the exact wording from the source in
+            # `details`. If one requirement names the same standard document twice, the wordings are joined.
             req_rows.append({"id": r.id, "name": r.name, "recurring": r.recurring, "doc_id": graph.doc_id,
-                             "regulator": r.regulator.strip(), "states": states})
+                             "regulator": regulator_name(r.regulator), "states": states})
             requires_rows += [{"id": r.id, "business_type": a.business_type, "condition": a.condition} for a in r.applies_to]
-            docs_rows += [{"id": r.id, "document": d.strip()[:120]} for d in r.documents if d.strip()]
+            details: dict[str, list[str]] = {}
+            for d in r.documents:
+                if d.strip():
+                    details.setdefault(document_name(d), []).append(d.strip())
+            docs_rows += [{"id": r.id, "document": name[:120], "details": "; ".join(texts)[:1000]}
+                          for name, texts in details.items()]
             dep_rows += [{"id": r.id, "prerequisite": d.requirement_id, "reason": d.reason} for d in r.depends_on]
             if r.satisfies:
                 sat_rows.append({"id": r.id, "parent": r.satisfies})

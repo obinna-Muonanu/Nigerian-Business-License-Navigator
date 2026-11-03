@@ -68,6 +68,10 @@ knowledge-base documents in Neo4j Browser and found it correct.
 No corrections were needed, so `reviewed.json` is identical to `extracted.json`. That is what a
 review that finds nothing to fix looks like; it doesn't mean the review was skipped.
 
+**Later finding (2026-11-03):** the review checked the steps and their order, not whether names were
+consistent, and the same regulator or document often appeared under several spellings. That is fixed
+when loading, with a reviewed list of standard names; see [ADR 0021](0021-standard-names-in-the-graph.md).
+
 ## Where to find it
 
 Extraction and the review report are in `ingestion/extract_graph.py`, and loading is in
