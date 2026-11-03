@@ -1,4 +1,4 @@
-"""WHAT THIS FILE DOES
+"""
 It works out what a business needs and in what order, using the knowledge graph. This is what makes Navi's
 checklists reliable.
 
@@ -455,7 +455,7 @@ def plan_steps(profile: UserProfile, done: set[str]) -> dict[str, Any]:
 
 
 def _graph_payload(nodes: list[dict], edges: list[dict]) -> dict[str, Any]:
-    """Package steps and links into the small structure the Streamlit app turns into a diagram."""
+    """Package steps and links into the small structure the website turns into a diagram."""
     return {"nodes": nodes, "edges": edges}
 
 

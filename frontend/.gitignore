@@ -1,0 +1,6 @@
+# Installed packages and the built website are recreated by npm, so they don't belong in git.
+node_modules/
+dist/
+# Local settings.
+.env.local
+.env.*.local
