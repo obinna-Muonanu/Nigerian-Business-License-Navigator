@@ -65,17 +65,53 @@ class Settings(BaseSettings):
 
     # These tune search and memory, and each one is range-checked when the app starts.
     # min_relevance is how close a document chunk has to be before it counts as relevant. top_k is how
-    # many chunks one search returns, which directly affects how many tokens we send. The next three
-    # control memory: after how many turns the chat is summarised, how many recent messages are kept
-    # word for word, and how often the long-term summary of the user is refreshed.
+    # many chunks one search returns, which directly affects how many tokens we send.
     min_relevance: float = Field(default=0.70, ge=0.0, le=1.0)
     top_k: int = Field(default=4, ge=1, le=20)
-    summary_trigger_turns: int = Field(default=30, ge=1)
-    keep_recent_messages: int = Field(default=12, ge=2)
+    # Short-term memory: once the context window reaches roughly summary_trigger_tokens tokens, the last
+    # keep_recent_turns turns are kept word for word and everything older is summarised. Tokens, not turns,
+    # decide when, because a handful of turns that each pulled in a big checklist can cost more than thirty
+    # short ones.
+    summary_trigger_tokens: int = Field(default=24000, ge=2000)
+    keep_recent_turns: int = Field(default=5, ge=1)
+    # Episodic memory: how often, in turns, the short note about the current chat is refreshed.
     summary_every_n_turns: int = Field(default=4, ge=1)
 
-    # This is where the Streamlit app finds the API server.
-    api_url: str = "http://localhost:8000"
+    # Where everything Navi writes down is stored. Leave DATABASE_URL empty to use a SQLite file on this
+    # computer, which is perfect for development. In production, set it to a Postgres address (from Render
+    # Postgres, Neon or Supabase, for example) so memory survives restarts and several servers can share it.
+    database_url: SecretStr | None = None
+    # How long to keep a user's memory after their last visit, in days. Users who haven't been seen for
+    # longer are deleted automatically, as the NDPA expects. Set it to 0 to keep data forever.
+    memory_retention_days: int = Field(default=365, ge=0)
+    # The same idea for each business of a user who is still active. A business nobody has worked on for
+    # BUSINESS_INACTIVE_DAYS (6 months) is set aside: kept, but shown to Navi as one line. One unused for
+    # BUSINESS_DELETE_DAYS (18 months) is deleted. A year isn't enough for deletion, because licences renew
+    # yearly and a business can be quiet for months before its renewal. 0 switches a stage off.
+    business_inactive_days: int = Field(default=180, ge=0)
+    business_delete_days: int = Field(default=540, ge=0)
+
+    # The Amazon Bedrock Guardrail that screens each message for prompt-injection attacks before Navi reads it
+    # (see agent/llm/guardrail.py). Create it once with `python -m scripts.create_guardrail`, which prints both
+    # values. If GUARDRAIL_ID is empty, messages aren't screened and Navi relies on its other protections.
+    guardrail_id: str | None = None
+    guardrail_version: str = "1"
+
+    # Sign-in. SUPABASE_URL is your Supabase project's address (https://<project-id>.supabase.co). The API uses
+    # it to check that every request carries a genuine Supabase sign-in pass. Without it, the API refuses all
+    # chat and memory requests, so it can never run open to the world by accident.
+    supabase_url: str | None = Field(default=None, pattern=r"^https://[a-z0-9-]+\.supabase\.(co|in)/?$")
+    # The web addresses allowed to call the API from a browser, separated by commas. The React app runs at
+    # http://localhost:5173 on your computer; add your real website address here when you deploy it.
+    allowed_origins: str = "http://localhost:5173"
+    # The most chat messages one user may send per minute. It stops one person (or a stuck script) from
+    # running up the Bedrock bill or slowing Navi down for everyone else.
+    chat_messages_per_minute: int = Field(default=10, ge=1)
+
+    @property
+    def allowed_origin_list(self) -> list[str]:
+        """The allowed web addresses as a list, with spaces and any trailing slashes removed."""
+        return [o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip()]
 
     @field_validator("embed_dimensions")
     @classmethod
@@ -88,11 +124,19 @@ class Settings(BaseSettings):
             raise ValueError("must be 256, 512 or 1024 (the sizes Titan Text Embeddings V2 supports)")
         return value
 
-    @field_validator("aws_profile", "aws_access_key_id", mode="before")
+    @field_validator("aws_profile", "aws_access_key_id", "database_url", "supabase_url", "guardrail_id", mode="before")
     @classmethod
     def _blank_is_none(cls, value: object) -> object:
         """Treat a setting left blank in .env (like `AWS_PROFILE=`) as "not set", not as an empty name."""
         return None if isinstance(value, str) and not value.strip() else value
+
+    @model_validator(mode="after")
+    def _business_stages_in_order(self) -> "Settings":
+        """A business must be set aside before it's deleted, so the deletion period has to be the longer one."""
+        if self.business_inactive_days and self.business_delete_days and \
+                self.business_delete_days <= self.business_inactive_days:
+            raise ValueError("BUSINESS_DELETE_DAYS must be longer than BUSINESS_INACTIVE_DAYS")
+        return self
 
     @model_validator(mode="before")
     @classmethod
@@ -135,7 +179,8 @@ class Settings(BaseSettings):
 
     @property
     def sessions_dir(self) -> Path:
-        # Strands saves each conversation here; this is the short-term memory on disk.
+        # Older versions saved each conversation here as files. Conversations now live in the database, but
+        # the folder is kept so scripts/reset_local.py can still clear out old chat files.
         return ROOT / "sessions"
 
     @property

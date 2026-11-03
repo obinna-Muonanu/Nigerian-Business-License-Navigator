@@ -1,16 +1,23 @@
 """
 It stops long conversations from becoming slow and expensive, without making Navi forget what was said.
 
-Every time Navi replies, the whole conversation so far is sent to the AI again, so longer chats cost more. This
-file keeps the full conversation for the first 30 turns. After that, it keeps the most recent 12 messages exactly
-as they were, and replaces everything older with a short written summary. As the chat keeps growing, the summary
-is updated.
+Every time Navi replies, the whole context window (Navi's rules, the tool list and the conversation so far) is
+sent to the AI again, so longer chats cost more. The rule is simple:
+
+    Once the context window reaches about 24,000 tokens, keep the last 5 turns exactly as they were, and replace
+    everything older with a short written summary.
+
+A "turn" is one message the user typed plus everything Navi did to answer it (its lookups and its reply). As the
+chat keeps growing, the summary is updated each time the limit is reached again.
 
 WHY IT MATTERS
 Simply deleting old messages would make Navi forget things the user said earlier ("as I mentioned, we're a
-partnership"). A summary keeps the important points at a fraction of the cost.
+partnership"). A summary keeps the important points at a fraction of the cost. The limit is measured in tokens,
+because tokens are what the AI charges for and what slows it down; a few turns that each pulled in a big checklist
+can cost more than thirty short ones.
 """
 
+import json
 import logging
 from typing import TYPE_CHECKING, Any
 
@@ -44,14 +51,14 @@ except ImportError:
 # right moments: apply_management after every turn, and reduce_context if the conversation gets too big.
 # The session manager also saves our state for us. Nothing else in the code needed to change.
 class RollingSummaryConversationManager(ConversationManager):
-    def __init__(self, trigger_turns: int = 30, keep_recent_messages: int = 12, max_transcript_chars: int = 24000):
+    def __init__(self, trigger_tokens: int = 24000, keep_recent_turns: int = 5, max_transcript_chars: int = 24000):
         # The parent class sets up removed_message_count, which Strands uses when it reloads a chat.
         super().__init__()
-        # Keeping fewer than two messages could leave no complete back-and-forth after the summary.
-        if keep_recent_messages < 2:
-            raise ValueError("keep_recent_messages must be at least 2 (one user + one assistant message)")
-        self.trigger_turns = trigger_turns
-        self.keep_recent_messages = keep_recent_messages
+        # At least one turn must stay word for word, so Navi always has the user's latest exchange in full.
+        if keep_recent_turns < 1:
+            raise ValueError("keep_recent_turns must be at least 1")
+        self.trigger_tokens = trigger_tokens
+        self.keep_recent_turns = keep_recent_turns
         self.max_transcript_chars = max_transcript_chars
         # The current rolling summary, as plain text, and how many we've written (for logging and the cost report).
         self._summary_text: str | None = None
@@ -88,19 +95,46 @@ class RollingSummaryConversationManager(ConversationManager):
         return [summary, ack]
 
     def _count_turns(self, messages: list["Message"]) -> int:
-        """Count how many real user turns are in the history. This is what gets compared against the 30-turn limit."""
+        """Count how many real user turns are in the history."""
         return sum(1 for m in messages if self._is_turn_start(m))
 
-    def _split_point(self, messages: list["Message"]) -> int:
-        """Find where the word-for-word part should begin: 12 messages from the end, moved back to the start of a turn.
+    @staticmethod
+    def _estimate_tokens(agent: "Agent") -> int:
+        """Roughly count the tokens in the whole context window: about four characters of text make one token.
 
-        Moving back (keeping more) rather than forward (keeping fewer) guarantees at least 12 messages stay
-        exactly as they were. Starting at the beginning of a turn guarantees no tool call is cut off from its result.
+        It counts everything that's sent to the AI on every reply: Navi's rules and memory block (the system
+        prompt), the descriptions of its tools, and the conversation. An estimate is good enough here. We only
+        need to know when the window is getting full, not its exact size, and counting exactly would mean an
+        extra call to the model on every turn.
         """
-        split = len(messages) - self.keep_recent_messages
-        while split > 0 and not self._is_turn_start(messages[split]):
-            split -= 1
-        return split
+        chars = len(agent.system_prompt or "")
+        chars += len(json.dumps(agent.tool_registry.get_all_tool_specs(), default=str))
+        for message in agent.messages:
+            for block in message.get("content", []):
+                if "text" in block:
+                    chars += len(block["text"])
+                elif "toolUse" in block:
+                    chars += len(str(block["toolUse"].get("input", "")))
+                elif "toolResult" in block:
+                    chars += sum(len(c.get("text", "")) for c in block["toolResult"].get("content", [])
+                                 if isinstance(c, dict))
+        return chars // 4
+
+    def _too_long(self, agent: "Agent") -> bool:
+        """Decide whether it's time to summarise: the context window has passed the token limit."""
+        return self._estimate_tokens(agent) > self.trigger_tokens
+
+    def _split_point(self, messages: list["Message"]) -> int:
+        """Find where the word-for-word part should begin: the start of the 5th-from-last turn.
+
+        Everything before this point gets summarised; everything from here on stays exactly as it was. Because
+        the split always lands at the start of a turn, a tool call is never cut off from its result. If the chat
+        has 5 turns or fewer, the answer is 0, meaning there's nothing old enough to summarise yet.
+        """
+        turn_starts = [i for i, m in enumerate(messages) if self._is_turn_start(m)]
+        if len(turn_starts) <= self.keep_recent_turns:
+            return 0
+        return turn_starts[-self.keep_recent_turns]
 
     def _transcript(self, messages: list["Message"]) -> str:
         """Turn the messages being summarised into readable text: what was said, plus short notes about tool calls.
@@ -160,8 +194,8 @@ class RollingSummaryConversationManager(ConversationManager):
         return True
 
     def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
-        """Strands calls this at the end of every turn. We only summarise once the chat is past the turn limit."""
-        if self._count_turns(agent.messages) > self.trigger_turns:
+        """Strands calls this at the end of every turn. We only summarise once the context window is past the limit."""
+        if self._too_long(agent):
             try:
                 self._compress(agent)
             except Exception:

@@ -1,9 +1,9 @@
 """
 It holds small helpers that all the tools share, so each tool doesn't have to repeat them.
 
-For example, it formats a tool's answer in a compact way, gets the current user's business details, works out
-whose records a tool should touch (always the current user, never someone the AI names), and keeps track of
-actions waiting for the user's "yes".
+For example, it formats a tool's answer in a compact way, finds which of the user's businesses a tool is talking
+about, works out whose records a tool should touch (always the current user, never someone the AI names), and keeps
+track of actions waiting for the user's "yes".
 """
 
 import json
@@ -11,7 +11,7 @@ from typing import Any
 
 from strands import ToolContext
 
-from agent.schemas import UserProfile
+from agent.memory import BusinessMemory, LongTermMemory
 
 
 def signature(tool_name: str, tool_input: dict[str, Any]) -> str:
@@ -58,13 +58,16 @@ def error(message: str, **payload: Any) -> str:
     return as_json({"status": "error", "message": message, **payload})
 
 
-def profile_of(ctx: ToolContext) -> UserProfile:
-    """Get the user's current profile from the agent's state (where it was loaded from long-term memory).
+def business_of(ctx: ToolContext, reference: str | None, create_if_none: bool = False) -> BusinessMemory | None:
+    """Find the business a tool should work on, always fresh from the database.
 
-    It's rebuilt as a proper UserProfile each time, so the tools work with checked, typed facts rather
-    than a loose dictionary.
+    `reference` is the name the model passed in the tool's `business` input. It can be left out when the user has
+    only one business. If it's missing when there are several, or matches none, this raises BusinessNotFound, and
+    the tool sends that message back so the model can pick the right business or ask the user. Only the current
+    user's businesses are ever searched, so a tool can't reach someone else's records.
     """
-    return UserProfile(**(ctx.agent.state.get("profile") or {}))
+    user_id, _ = ids_of(ctx)
+    return LongTermMemory.resolve(user_id, reference, create_if_none=create_if_none)
 
 
 def ids_of(ctx: ToolContext) -> tuple[str, str]:

@@ -7,8 +7,7 @@ English or Pidgin, like "yes", "go ahead" or "abeg do am") is that exact action 
 any unused approval expires at the end of the turn.
 
 WHY IT MATTERS
-The brief requires an explicit yes before any record changes. Because this is code, not just an instruction to the AI,
-tricks like "the user already confirmed" don't work.
+Because this is code, not just an instruction to the AI, tricks like "the user already confirmed" don't work.
 """
 
 import json
@@ -25,7 +24,7 @@ from strands.hooks import (
 
 from agent.hooks._messages import add_policy_note, last_user_text_message, text_of
 from agent.knowledge import graph_service
-from agent.storage import sqlite_store
+from agent.memory import LongTermMemory
 from agent.tools import WRITE_TOOLS
 # The fingerprint function is shared with the tools (plan_steps registers actions waiting for a yes), so it lives in _common.
 from agent.tools._common import signature
@@ -34,7 +33,7 @@ from agent.tools._common import signature
 # opens, so something like "I said no, yes I know" doesn't count as a yes.
 AFFIRM = re.compile(
     r"^\s*(yes|yeah|yep|yup|y|ok|okay|sure|go ahead|do it|confirm(ed)?|proceed|please do|correct|"
-    r"abeg do am|do am|oya|na so|e correct|yes o|yes please|alright)\b",
+    r"abeg do am|do am|oya|oya na|na so|e correct|yes o|yes please|alright)\b",
     re.IGNORECASE,
 )
 NEGATE = re.compile(r"^\s*(no|nope|don'?t|do not|cancel|stop|wait|no o|abeg no|leave am|not now)\b", re.IGNORECASE)
@@ -174,7 +173,7 @@ class ConfirmationHook(HookProvider):
 
     @staticmethod
     def _already_recorded(state: Any, tool_input: dict[str, Any]) -> bool:
-        """Check whether this is a request to mark a step done that's already in the user's progress.
+        """Check whether this is a request to mark a step done that's already in the business's progress.
 
         If anything goes wrong while checking, it answers "no", so the safe default (asking for a yes) still applies.
         """
@@ -184,8 +183,11 @@ class ConfirmationHook(HookProvider):
             resolved = graph_service.resolve_requirement(str(tool_input.get("requirement", "")))
             if not resolved:
                 return False
-            done = set(sqlite_store.completed_steps(state.get("user_id")))
-            return graph_service.is_recorded_done(resolved["id"], done)
+            # Look in the progress of the business the call is about (or the user's only business).
+            business = LongTermMemory.resolve(state.get("user_id"), tool_input.get("business"))
+            if business is None:
+                return False
+            return graph_service.is_recorded_done(resolved["id"], set(business.completed))
         except Exception:
             return False
 

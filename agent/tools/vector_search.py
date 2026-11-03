@@ -10,7 +10,8 @@ so Navi never has to guess.
 from strands import ToolContext, tool
 
 from agent.knowledge import retrieval_service
-from agent.tools._common import as_json, profile_of
+from agent.memory import BusinessNotFound
+from agent.tools._common import as_json, business_of
 
 
 # The @tool decorator turns this function into a tool the model can call. The docstring becomes the tool's
@@ -28,10 +29,19 @@ def vector_search(query: str, tool_context: ToolContext, business_type: str | No
 
     Args:
         query: The question in clear standard English (translate Pidgin first), e.g. "NAFDAC product registration fee for fruit juice".
-        business_type: Optional filter: DRINKS, PHARM, COSM or FURN. Defaults to the user's business type.
+        business_type: Optional filter: DRINKS, PHARM, COSM or FURN. Defaults to the user's business type
+            when they have only one business. With several businesses, pass it to search one business's documents.
     """
-    # If no business type was given, use the user's own, so the results stay on topic.
-    bt = business_type or profile_of(tool_context).business_type
+    # If no business type was given and the user has exactly one business, use its type so the results stay on
+    # topic. With several businesses we can't know which one the question is about, so we search them all
+    # rather than guess.
+    bt = business_type
+    if not bt:
+        try:
+            target = business_of(tool_context, None)
+        except BusinessNotFound:
+            target = None
+        bt = target.profile.business_type if target else None
     bt = bt.upper() if bt else None
 
     # Search, keeping only results that are relevant enough. If nothing is, the service sends back the

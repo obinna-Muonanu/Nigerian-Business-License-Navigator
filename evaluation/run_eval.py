@@ -34,8 +34,9 @@ from agent.config import get_settings
 from agent.core import build_agent, run_turn
 from agent.hooks.grounding import FALSE_CLAIM_WARNING, has_citation
 from agent.knowledge import graph_service
+from agent.memory import LongTermMemory
 from agent.schemas import UserProfile
-from agent.storage import sqlite_store
+from agent.storage import store
 from evaluation.judge import judge
 from ingestion.parse_docs import load_documents
 
@@ -116,10 +117,8 @@ async def run_case(tag: str, mode: str, turns: list[str], profile: dict | None =
     into long-term memory first lets a question be answered in a single turn, the same way in both modes.
     """
     user_id = session_id =f"eval-{tag}-{mode}-{RUN_ID}-{uuid.uuid4().hex[:4]}"
-    if profile:
-        sqlite_store.save_profile(user_id, profile)
-    for step in done or []:
-        sqlite_store.set_progress(user_id, step, "done")
+    if profile or done:
+        LongTermMemory.seed_business(user_id, profile or {}, done)
 
     agent = build_agent(user_id, session_id, mode)
     replies = []
@@ -127,7 +126,7 @@ async def run_case(tag: str, mode: str, turns: list[str], profile: dict | None =
         replies.append(await run_turn(agent, turn))
     # The tool calls come from the audit log, not from what the model says it did, so the checks rely on what
     # actually ran, including calls the confirmation hook blocked.
-    calls = sqlite_store.tool_calls_for_session(session_id)
+    calls = store.tool_calls_for_session(session_id)
     return {
         "session_id": session_id,
         "replies": [r["reply"] for r in replies],

@@ -7,7 +7,7 @@ They fall into five groups:
     Plan:            build the ordered checklist.
     Change records:  save the checklist, mark a step as done, or set a reminder. These need the user's "yes" first.
     Hand over:       pass the chat to a human adviser.
-    Remember:        save a fact about the user's business.
+    Remember:        save a fact about one of the user's businesses, or add another business.
 
 This file lists every tool and says which ones change records. It also sets up the smaller set of tools given to
 the "baseline" version of Navi, which is used in testing to measure how much the knowledge graph helps.
@@ -28,7 +28,8 @@ from agent.tools.save_checklist import save_checklist
 from agent.tools.set_reminder import set_reminder
 from agent.tools.update_progress import update_progress
 
-# Tools that hand over to a human or remember a fact.
+# Tools that hand over to a human, remember a fact, or add another business.
+from agent.tools.add_business import add_business
 from agent.tools.handoff_to_human import handoff_to_human
 from agent.tools.remember_profile import remember_profile
 
@@ -40,12 +41,12 @@ WRITE_TOOLS = {"save_checklist", "update_progress", "set_reminder"}
 GRAPHRAG_TOOLS = [
     vector_search, get_requirements, get_dependencies, plan_steps, explain_path, query_graph,
     save_checklist, update_progress, set_reminder,
-    handoff_to_human, remember_profile,
+    handoff_to_human, remember_profile, add_business,
 ]
 
 # The tools for the vector-only baseline in the key experiment: same documents, same model, but no graph.
 # The hand-off and remember tools are kept, so the baseline isn't marked down for things that have nothing
 # to do with the graph.
-BASELINE_TOOLS = [vector_search, handoff_to_human, remember_profile]
+BASELINE_TOOLS = [vector_search, handoff_to_human, remember_profile, add_business]
 
 __all__ = ["GRAPHRAG_TOOLS", "BASELINE_TOOLS", "WRITE_TOOLS"]

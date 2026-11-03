@@ -6,21 +6,20 @@ list of messages: what the user typed and what Navi replied. It hides the behind
 notes, the details of Navi's lookups, and internal reference codes, so the user only sees the conversation itself.
 """
 
-from strands.session.file_session_manager import FileSessionManager
-
-from agent.config import get_settings
 from agent.hooks._messages import POLICY_NOTE_PREFIX
 from agent.output_filter import scrub
+# The same limit the live chat uses for narration; kept here to avoid importing the whole agent.
+NARRATION_MAX_CHARS = 400
+from agent.storage.chat_repository import DatabaseChatRepository
 
-# When no agent ID is given (and core.build_agent doesn't give one), Strands calls the agent "default"
-# and saves its messages under sessions/session_<id>/agents/agent_default/.
+# When no agent ID is given (and core.build_agent doesn't give one), Strands calls the agent "default", and
+# that's the name its messages are saved under in the chat_messages table.
 AGENT_ID = "default"
 
 
 def session_transcript(session_id: str) -> list[dict[str, str]]:
     """Return the chat as a list of messages, each with a role ("user" or "assistant") and its text, in order."""
-    manager = FileSessionManager(session_id=session_id, storage_dir=str(get_settings().sessions_dir))
-    stored = manager.list_messages(session_id, AGENT_ID)
+    stored = DatabaseChatRepository().list_messages(session_id, AGENT_ID)
 
     turns: list[dict[str, str]] = []
     for session_message in stored:
@@ -39,8 +38,12 @@ def session_transcript(session_id: str) -> list[dict[str, str]]:
 
         # For the assistant's messages, we keep the text and drop the tool calls. One turn can produce several
         # assistant messages ("Let me check..." then a tool call, then the final answer). We merge those into
-        # one bubble, which is how the user saw them stream in.
+        # one bubble, which is how the user saw them stream in. A short line written just before a tool call is
+        # the model narrating its own work, which the live chat takes back (see stream_turn in agent/core.py),
+        # so a reopened chat leaves it out too.
         texts = [b["text"] for b in content if "text" in b]
+        if any("toolUse" in b for b in content) and len("".join(texts)) <= NARRATION_MAX_CHARS:
+            continue
         if not texts:
             continue
         text = scrub("\n".join(texts))

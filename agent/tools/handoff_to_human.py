@@ -8,7 +8,7 @@ demonstration, so no message is actually sent anywhere.
 
 from strands import ToolContext, tool
 
-from agent.storage import sqlite_store
+from agent.storage import store
 from agent.tools._common import ids_of, ok
 
 
@@ -25,7 +25,7 @@ def handoff_to_human(reason: str, summary: str, tool_context: ToolContext) -> st
     # chat to be passed on "with a short summary"). The length limits stop an oversized summary from
     # bloating the table.
     user_id, session_id = ids_of(tool_context)
-    ticket = sqlite_store.add_handoff(user_id, session_id, reason[:40], summary[:1000])
+    ticket = store.add_handoff(user_id, session_id, reason[:40], summary[:1000])
 
     # Note the ticket number, so the server can show a "passed to a human" notice in the UI.
     tool_context.agent.state.set("handoff_ticket", ticket)

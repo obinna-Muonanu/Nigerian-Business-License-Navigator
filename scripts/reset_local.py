@@ -24,6 +24,12 @@ def main() -> None:
 
     # Only the folders the app recreates by itself. The knowledge base, the graph files and .env are never touched.
     s = get_settings()
+    # This script only clears local files. If DATABASE_URL points at a Postgres database (most likely the live
+    # one), we stop, so nobody wipes real users' memory by running a "local" reset by mistake.
+    if s.database_url:
+        print("DATABASE_URL is set, so the data lives in Postgres, not in local files. This script only resets a "
+              "local SQLite setup. To delete one user's data, use DELETE /users/{user_id} on the API.")
+        return
     targets = [s.sessions_dir, s.logs_dir, s.runtime_dir]
     # Show exactly what's about to go and ask first, because deleted chats and memory can't be got back.
     print("This deletes:\n  " + "\n  ".join(str(t) for t in targets))

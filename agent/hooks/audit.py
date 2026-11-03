@@ -24,7 +24,7 @@ from strands.hooks import (
 )
 
 from agent.config import get_settings
-from agent.storage import sqlite_store
+from agent.storage import store
 
 
 def _result_text(result: Any) -> str:
@@ -82,7 +82,7 @@ class AuditHook(HookProvider):
         else:
             status = "success"
 
-        # Write the entry in two places: the JSONL file (easy for a person to read, one per chat) and SQLite
+        # Write the entry in two places: the JSONL file (easy for a person to read, one per chat) and the database
         # (easy for the evaluation to query). Both keep the full result, so the log is a complete record of
         # what the agent saw, plus a short preview for skimming.
         state = event.agent.state
@@ -98,7 +98,7 @@ class AuditHook(HookProvider):
         }
         with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, default=str, ensure_ascii=False) + "\n")
-        sqlite_store.log_tool_call(state.get("user_id"), self.session_id, tool_use["name"],
+        store.log_tool_call(state.get("user_id"), self.session_id, tool_use["name"],
                                    tool_use.get("input", {}), status, text, duration_ms)
 
         # Add this call to the turn's list for the grounding check. "found" notes whether the tool came back

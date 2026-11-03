@@ -21,7 +21,7 @@ from agent.memory import LongTermMemory
 
 
 def _new_session_id() -> str:
-    """Make a random chat ID that's safe to use as a folder name. The "cli-" start shows the chat came from here."""
+    """Make a random chat ID that's safe to use in a file name. The "cli-" start shows the chat came from here."""
     return f"cli-{uuid.uuid4().hex[:8]}"
 
 
@@ -46,12 +46,13 @@ async def chat_loop(user_id: str, session_id: str, mode: str) -> None:
 
         # Handle the console commands. These are never sent to the model. They make it easy to show memory
         # working: /new starts a fresh chat for the same user, /memory shows what long-term memory holds, and
-        # /state shows the current chat's working state (the profile, anything waiting for a yes, and so on).
+        # /state shows the current chat's working state (who and which chat it is, anything waiting for a yes, and so on).
         if text == "/quit":
             break
         if text == "/end":
             after_turn(agent, force_summary=True)
-            print("Session summary saved:", LongTermMemory.load(user_id).summary)
+            episodes = LongTermMemory.load(user_id).episodes
+            print("Session note saved:", episodes[0]["summary"] if episodes else "(nothing worth noting)")
             break
         if text == "/new":
             after_turn(agent, force_summary=True)
@@ -60,9 +61,13 @@ async def chat_loop(user_id: str, session_id: str, mode: str) -> None:
             print(f"New session {session_id}. Long-term memory carried over.\n")
             continue
         if text == "/memory":
+            # Show each business's confirmed facts and finished steps, then the notes from recent chats.
             memory = LongTermMemory.load(user_id)
-            print(json.dumps({"profile": memory.profile.model_dump(exclude_none=True), "language": memory.language,
-                              "summary": memory.summary, "completed": memory.completed}, indent=2))
+            print(json.dumps({
+                "businesses": [{"label": b.label, "profile": b.profile.model_dump(exclude_none=True),
+                                "fact_sources": b.sources, "completed": b.completed} for b in memory.businesses],
+                "recent_sessions": memory.episodes,
+            }, indent=2))
             continue
         if text == "/state":
             print(json.dumps(agent.state.get(), indent=2, default=str))
@@ -85,7 +90,7 @@ async def chat_loop(user_id: str, session_id: str, mode: str) -> None:
                 u = event["usage"]
                 print(f"\n   [{event['latency_ms']} ms | in {u['inputTokens']} | out {u['outputTokens']} "
                       f"| cache read {u['cacheReadInputTokens']}]\n")
-        # Do the same after-turn work as the server: refresh the long-term summary every few turns.
+        # Do the same after-turn work as the server: refresh this chat's note every few turns.
         after_turn(agent)
 
 
