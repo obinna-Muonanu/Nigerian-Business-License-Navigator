@@ -270,10 +270,10 @@ Inactive businesses (not used for months; details saved but hidden). If the user
 BUSINESS_TEMPLATE = """- Business "{label}"
   Profile: {profile}
   Still missing for planning: {missing}
-  Completed steps (internal IDs, never show them to the user): {done}"""
+  Completed steps, already recorded (internal code and name; never show the codes to the user): {done}"""
 
 
-def render_memory_block(memory: "UserMemory") -> str:
+def render_memory_block(memory: "UserMemory", step_names: dict[str, str] | None = None) -> str:
     """Turn what we remember about the user into a short block for the system prompt.
 
     Each active business gets a few lines of its own, so the model can tell them apart; inactive ones get a single
@@ -281,7 +281,12 @@ def render_memory_block(memory: "UserMemory") -> str:
     are included: listing empty values would waste tokens, and might tempt the model to treat "unknown" as an
     answer. Every blank gets a readable fallback, so even a brand-new user gets a tidy block. Today's date is
     included so the model can tell how old the "information as of" dates in the sources are.
+
+    Completed steps are shown as "code (name)" when `step_names` is given. With codes alone, the model couldn't
+    tell that a user's "facility setup" is the already-recorded D01, and it once held back a whole checklist to
+    ask about it.
     """
+    names = step_names or {}
     active = [b for b in memory.businesses if b.active]
     inactive = [b for b in memory.businesses if not b.active]
     businesses = "\n".join(
@@ -289,7 +294,7 @@ def render_memory_block(memory: "UserMemory") -> str:
             label=b.label,
             profile={k: v for k, v in b.profile.model_dump().items() if v is not None} or "(nothing known yet)",
             missing=", ".join(b.profile.missing_for_planning()) or "nothing",
-            done=", ".join(b.completed) or "none",
+            done="; ".join(f"{c} ({names[c]})" if c in names else c for c in b.completed) or "none",
         )
         for b in active
     ) or ("(no active businesses)" if inactive else "(new user, no businesses yet)")

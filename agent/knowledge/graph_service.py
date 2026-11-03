@@ -240,6 +240,22 @@ def resolve_requirement(ref: str) -> dict[str, str] | None:
     return best_requirement_for(ref)
 
 
+def requirement_names(req_ids: list[str]) -> dict[str, str]:
+    """Look up the plain names of several requirements at once, e.g. {"D01": "Production facility meets ..."}.
+
+    The memory block uses this so Navi can see which steps a user has finished by name, not just by code. If
+    the graph can't be reached, it returns nothing and the memory block simply shows the codes.
+    """
+    if not req_ids:
+        return {}
+    try:
+        rows = neo4j_client.read("MATCH (r:Requirement) WHERE r.id IN $ids RETURN r.id AS id, r.name AS name",
+                                 {"ids": list(req_ids)})
+    except Exception:
+        return {}
+    return {row["id"]: row["name"] for row in rows}
+
+
 def is_recorded_done(req_id: str, done: set[str]) -> bool:
     """Check whether a step is already in the user's progress. For a parent like R01, any of its routes counts.
 

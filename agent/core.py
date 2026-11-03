@@ -25,6 +25,7 @@ from strands.tools.executors import SequentialToolExecutor
 from strands.types.exceptions import MaxTokensReachedException
 
 from agent.hooks import build_hooks
+from agent.knowledge import graph_service
 from agent.hooks.input_guard import mask_pii
 from agent.llm import build_agent_model
 from agent.llm.guardrail import screen_message
@@ -53,7 +54,8 @@ def build_agent(user_id: str, session_id: str, mode: Mode = "graphrag") -> Agent
     system_prompt = [
         {"text": static},
         {"cachePoint": {"type": "default"}},
-        {"text": render_memory_block(memory)},
+        {"text": render_memory_block(memory, graph_service.requirement_names(
+            [step for b in memory.businesses for step in b.completed]))},
     ]
 
     # Here everything from the architecture diagram gets wired together: the model, the prompt, the tools,

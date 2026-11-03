@@ -1,6 +1,6 @@
 # ADR 0017: Evaluate with a fair baseline, gold answers from the reviewed graph, a judge and hard checks
 
-**Status:** Accepted · **Date:** 2026-10-27
+**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (run-to-run noise in the checklist categories)
 
 ## Context
 
@@ -70,3 +70,37 @@ section as "invented". And scores vary a little from run to run.
 The runner is `evaluation/run_eval.py`, the judge is `evaluation/judge.py`, and the datasets are in
 `evaluation/datasets/`. Results are saved in `evaluation/results/`, and the write-up is
 `evaluation/EXPERIMENT_REPORT.md`.
+
+## Update (2026-11-03): single runs are too noisy to compare small changes
+
+While trying to improve the checklist categories, I ran the 10 checklist questions of the key experiment
+(5 "what do I need, in what order?" and 5 "I've done X, what's left?", GraphRAG only) after each change:
+
+| Version | What do I need: correct / valid order | What's left: correct / valid order |
+|---|---|---|
+| Unchanged, first run | 80% / 4 of 5 | 70% / 4 of 5 |
+| "Name every step" rule | 70% / 2 of 5 | 70% / 4 of 5 |
+| Planner stages + dependency-first sort | 80% / 4 of 5 | 70% / 3 of 5 |
+| + completed steps named in the memory block | 80% / 3 of 5 | 60% / 3 of 5 |
+| Unchanged + step names only (kept) | 70% / 2 of 5 | 70% / 3 of 5 |
+
+The first and last rows differ only in how completed steps are named in the memory block, yet one category
+moved from 4 to 2 valid orders. With five questions per category, one answer moves a score by 10 to 20
+points, and the model writes each checklist slightly differently every run. **Differences this size are
+noise.** To compare versions fairly, each question should be run at least three times and the results
+averaged, or the checklist should be produced by code so it doesn't vary between runs.
+
+What the judge's explanations did show:
+- **Order errors come from the model rearranging the planner's list,** for example moving conditional steps
+  into their own section. The planner's own order was checked and is valid.
+- **Asking for complete lists made them longer** (one answer covered "all 33 steps"), but longer lists gave
+  more chances to misplace a step.
+- **Sorting purely by dependencies** moved yearly steps such as "CAC annual returns" into early stages, which
+  the judge marks as wrong.
+- **Naming completed steps in the memory block** fixed a repeatable failure. A user saying "I've done the
+  facility setup" was mistaken for a different step, and Navi held back the whole checklist to ask about it.
+  This change was kept; the others were reverted.
+
+The most promising next step is to have **code render the checklist** from the planner's output (stages,
+order and markers), with Navi adding only the explanation around it. Order and completeness would then be
+guaranteed and identical in every run.
