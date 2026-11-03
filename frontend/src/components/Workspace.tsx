@@ -2,7 +2,7 @@
 //
 // This is where the conversation is kept and where messages are sent. When the user sends a message, it is added to
 // the screen straight away, followed by an empty reply from Navi that fills in as the answer streams back from the
-// API. Extras that arrive along the way (what Navi is doing, the step diagram, a warning, a hand-off ticket) are
+// API. Extras that arrive along the way (what Navi is doing, a warning, a hand-off ticket) are
 // attached to that same reply. After each reply, the sidebar is refreshed, because Navi may have saved a checklist
 // or a new chat may need to appear in the list.
 
@@ -112,7 +112,7 @@ export function Workspace({ email }: { email: string | null }) {
       const data = await api.get<{ messages: { role: "user" | "assistant"; content: string }[] }>(
         `/sessions/${encodeURIComponent(id)}/messages`,
       );
-      // Reopened chats come back as text only; their diagrams and notices weren't saved, so they aren't shown again.
+      // Reopened chats come back as text only; their notices weren't saved, so they aren't shown again.
       setMessages(data.messages.map((m) => ({ id: newId(), role: m.role, content: m.content })));
       setSessionId(id);
       setError(null);
@@ -173,9 +173,6 @@ export function Workspace({ email }: { email: string | null }) {
             tools: [...(m.tools ?? []), event.name],
             activity: TOOL_ACTIVITY[event.name] ?? "Working",
           }));
-          break;
-        case "graph":
-          updateReply((m) => ({ ...m, graph: event.graph }));
           break;
         case "warning":
           updateReply((m) => ({ ...m, warning: event.text }));

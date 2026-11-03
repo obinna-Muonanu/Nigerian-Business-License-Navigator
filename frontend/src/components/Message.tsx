@@ -1,19 +1,15 @@
 // One message in the conversation: the user's on the right, Navi's on the left with the logo.
 //
 // Navi's replies are written in Markdown (a simple way of marking up headings, bold text, lists and links), so they
-// are turned into properly formatted text here. Under a reply, extras can appear: the dependency diagram, a
+// are turned into properly formatted text here. Under a reply, extras can appear: a
 // grounding warning, a "passed to a human" notice, and, if switched on, the technical details of the turn.
 
-import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { DisplayMessage } from "../lib/types";
-import { DependencyGraph } from "./DependencyGraph";
 import { Logo } from "./Logo";
 
 export function Message({ message, showDetails }: { message: DisplayMessage; showDetails: boolean }) {
-  const [showGraph, setShowGraph] = useState(false);
-
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
@@ -54,18 +50,6 @@ export function Message({ message, showDetails }: { message: DisplayMessage; sho
             <span className="inline-block size-1.5 animate-pulse rounded-full bg-brand" />
             {message.activity}…
           </p>
-        )}
-
-        {message.graph && message.graph.nodes.length > 0 && (
-          <div className="mt-3">
-            <button
-              onClick={() => setShowGraph(!showGraph)}
-              className="text-sm font-medium text-brand hover:text-brand-dark"
-            >
-              {showGraph ? "Hide" : "Show"} the step diagram
-            </button>
-            {showGraph && <div className="mt-2"><DependencyGraph graph={message.graph} /></div>}
-          </div>
         )}
 
         {message.warning && (

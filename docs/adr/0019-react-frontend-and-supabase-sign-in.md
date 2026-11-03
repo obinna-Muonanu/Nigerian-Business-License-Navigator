@@ -21,8 +21,8 @@ I can deliver the full stack the way real products are built.
 ## Decision
 
 The web app is now a separate **React + TypeScript** project in `frontend/`, built with **Vite** and
-styled with **Tailwind CSS**. It keeps every Streamlit feature: streamed replies, tool activity, the
-step diagram (now drawn as SVG), warnings, hand-off notices, the chat list grouped by date, saved
+styled with **Tailwind CSS**. It keeps the Streamlit features: streamed replies, tool activity,
+warnings, hand-off notices, the chat list grouped by date, saved
 checklists and reminders, sample questions, the GraphRAG/baseline switch and the technical details
 line. It also adds a **My data** page where users can see, download or delete everything Navi
 remembers about them.
@@ -90,6 +90,6 @@ server; several servers would need a shared limit.
 
 - Sign-in check: `api/auth.py`; the protected routes: `api/server.py`
 - Web app: `frontend/src/` (`App.tsx`, `components/Workspace.tsx`, `components/ChatView.tsx`,
-  `components/Sidebar.tsx`, `components/MyData.tsx`, `components/DependencyGraph.tsx`, `lib/api.ts`)
+  `components/Sidebar.tsx`, `components/MyData.tsx`, `lib/api.ts`)
 - Settings: `SUPABASE_URL`, `ALLOWED_ORIGINS`, `CHAT_MESSAGES_PER_MINUTE` in `.env`; the web app's own
   settings in `frontend/.env.local` (see `frontend/.env.example`)

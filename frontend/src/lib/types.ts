@@ -8,7 +8,6 @@ export type ChatEvent =
   // Take back the last `chars` characters: Navi was narrating its own work ("Let me check…") just before a tool.
   | { type: "retract"; chars: number }
   | { type: "tool"; name: string }
-  | { type: "graph"; graph: GraphData }
   | { type: "warning"; text: string }
   | { type: "handoff"; ticket: number }
   | { type: "error"; text: string }
@@ -21,12 +20,6 @@ export interface TokenUsage {
   cacheWriteInputTokens: number;
 }
 
-// The steps and arrows for the dependency diagram. "group" says how to colour each step.
-export interface GraphData {
-  nodes: { id: string; name: string; group: "done" | "todo" | "waiting" }[];
-  edges: { from: string; to: string }[];
-}
-
 // One message as shown on screen. Navi's messages can carry extras that arrive after the text.
 export interface DisplayMessage {
   id: string;
@@ -35,7 +28,6 @@ export interface DisplayMessage {
   pending?: boolean; // true while Navi is still writing this reply
   activity?: string; // what Navi is doing right now, e.g. "Building your checklist"
   tools?: string[];
-  graph?: GraphData;
   warning?: string;
   handoff?: number;
   usage?: TokenUsage;

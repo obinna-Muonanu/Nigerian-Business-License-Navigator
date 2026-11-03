@@ -361,8 +361,7 @@ python main_agent.py --user ada-ibadan       # or chat in the terminal, no serve
 - **The web app** (React + TypeScript + Tailwind) starts with a sign-in page. After signing in, a
   Claude-style sidebar has **New chat**, your past chats grouped by date, your saved checklists (one per
   business), **My data** (see, download or delete what Navi remembers), and **Developer settings**
-  (baseline/GraphRAG mode, and a tools, latency and token display). Replies stream word by word, and a
-  checklist reply can show its step diagram.
+  (baseline/GraphRAG mode, and a tools, latency and token display). Replies stream word by word.
 - **Several people can test at once.** Each person signs in with their own email; the API takes their
   identity from the Supabase sign-in pass, so nobody can see anyone else's chats or memory.
 - **Start clean** before a demo (deletes chats, logs and memory, but not the graph). It only works on
@@ -373,7 +372,7 @@ python main_agent.py --user ada-ibadan       # or chat in the terminal, no serve
 
 | # | Say | What happens |
 |---|---|---|
-| 1 | "I want to start selling packaged zobo drinks in Ibadan. What do I need, and in what order?" | Clarifying questions, then an ordered checklist with a dependency diagram |
+| 1 | "I want to start selling packaged zobo drinks in Ibadan. What do I need, and in what order?" | Clarifying questions, then an ordered checklist |
 | 2 | "How much is the CAC business name fee and how long does it take?" | Answer with footnotes and a Sources list |
 | 3 | "I have finished my business registration. What is next?" | Shows what is left at once, then asks to record the progress; "yes" saves it |
 | 4 | "Why do I need the NAFDAC facility inspection before product registration?" | The chain of dependencies, with reasons and sources |
