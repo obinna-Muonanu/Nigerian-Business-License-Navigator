@@ -113,23 +113,25 @@ The same 9 documents are processed **twice**: once into the graph, once into sea
 2. **Check it by hand.** A review report compares the model's output with each document's own
    "Must be done after" lines and flags anything that disagrees. The graph was checked by hand in Neo4j
    Browser and found correct, so no corrections were needed.
-3. **Load Neo4j.** The reviewed graph is loaded, and each document is split into chunks by section,
+3. **Load Neo4j.** The reviewed graph is loaded, with every regulator and required document given one
+   standard name from a reviewed list (`data/graph/canonical_names.json`, ADR 0021), so the same thing
+   isn't stored under several spellings. Then each document is split into chunks by section,
    embedded with Titan, and stored with a **vector index**. A link `(Chunk)-[:DESCRIBES]->(Requirement)`
    joins each piece of text to the step it describes.
 
 **The resulting knowledge graph:**
 
-| Nodes (238) | | Relationships (861) | |
+| Nodes (149) | | Relationships (837) | |
 |---|---|---|---|
 | Requirement | 72 | APPLIES_IN (requirement → state) | 352 |
-| RequiredDocument | 135 | REQUIRES (business type → requirement, with a condition) | 198 |
-| Regulator | 21 | NEEDS_DOCUMENT | 152 |
+| RequiredDocument | 52 | REQUIRES (business type → requirement, with a condition) | 198 |
+| Regulator | 15 | NEEDS_DOCUMENT (keeps the document's own wording) | 128 |
 | State | 6 | DEPENDS_ON (with the reason) | 83 |
 | BusinessType | 4 | ISSUED_BY | 72 |
 | | | SATISFIES (the 4 CAC registration routes) | 4 |
 
-Plus **117 document chunks** from 9 documents, for vector search. The brief's minimum is 30 nodes and
-60 relationships.
+Plus **117 document chunks** from 9 documents, for vector search (275 nodes and 1,040 relationships in
+all). The brief's minimum is 30 nodes and 60 relationships.
 
 ### 2.3 Step 2: Answer a question (one turn)
 
@@ -214,7 +216,7 @@ Each decision is explained in full (the problem, the options, why, and the trade
 
 ### 2.6 How it was evaluated
 
-Four test suites, all re-runnable with one command (section 4.5):
+Four test suites, all re-runnable with one command (section 4.6):
 
 | Suite | Size | How it is graded |
 |---|---|---|
@@ -307,7 +309,7 @@ Testing found real bugs, which were fixed before the final run:
 ### 4.2 Install and configure (Windows PowerShell)
 ```powershell
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -e ".[dev]"            # the app and its test tools, from pyproject.toml
 Copy-Item .env.example .env      # then fill in AWS, the model IDs and Neo4j
 ```
 In `.env`, also set:
@@ -334,7 +336,7 @@ python -m ingestion.load_graph --reset       # load graph + embedded chunks into
 
 ### 4.4 Run the agent
 ```powershell
-uvicorn server:app --port 8000               # terminal 1: the API
+uvicorn api.server:app --port 8000           # terminal 1: the API
 npm --prefix frontend run dev                # terminal 2: the web app, at http://localhost:5173
 python main_agent.py --user ada-ibadan       # or chat in the terminal, no server needed
 ```
@@ -362,7 +364,19 @@ python main_agent.py --user ada-ibadan       # or chat in the terminal, no serve
 | 7 | "Abeg, wetin I need to open pharmacy for Lagos?" | The same help, replied in Pidgin |
 | ★ | Click **New chat**, then "What should I do next?" | Remembers the business; no questions asked again |
 
-### 4.5 Run the evaluation
+### 4.5 Run the tests
+```powershell
+pytest -q        # 55 unit tests, in seconds, with no AWS, Neo4j or real database needed
+```
+The unit tests check Navi's own rules: the query guard, Pidgin detection and number masking, removing
+internal codes from replies, memory (one business per fact, no silent overwrites, no mixing between users),
+the sign-in check, the API's access rules, and the knowledge graph's standard names. They also run
+automatically on GitHub on every push (`.github/workflows/tests.yml`), together with a build of the website.
+
+The evaluation below is different: it calls the real models to grade Navi's answers, so it costs money and
+takes minutes.
+
+### 4.6 Run the evaluation
 ```powershell
 python -m evaluation.run_eval --suite safety                   # 5 attack cases
 python -m evaluation.run_eval --suite tools                    # 11 tool scenarios
@@ -394,8 +408,11 @@ evaluation/            datasets, judge, runner, results, EXPERIMENT_REPORT.md
 knowledge_base/        the 9 source documents
 data/graph/            the extracted and reviewed graph
 docs/adr/              Architecture Decision Records
-server.py              FastAPI API (streaming /chat, sessions, checklists, memory, export/delete, health)
-auth.py                checks the Supabase sign-in pass on every request
+api/server.py          FastAPI API (streaming /chat, sessions, checklists, memory, export/delete, health)
+api/auth.py            checks the Supabase sign-in pass on every request
+tests/                 fast unit tests (pytest): safety checks, memory, sign-in, API access rules
+.github/workflows/     runs the unit tests and the website build on every push
+pyproject.toml         the project's dependencies and test settings
 frontend/              React + TypeScript + Tailwind web app (sign-in, chat, sidebar, My data)
 main_agent.py          command-line chat
 scripts/reset_local.py start from a clean slate (local SQLite only)
