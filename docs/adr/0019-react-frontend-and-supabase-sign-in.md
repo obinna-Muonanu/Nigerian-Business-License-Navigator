@@ -28,7 +28,7 @@ line. It also adds a **My data** page where users can see, download or delete ev
 remembers about them.
 
 Sign-in uses **Supabase Auth** with email and password. The browser keeps the sign-in pass (a JWT) and
-sends it with every request. The API checks it in `auth.py`:
+sends it with every request. The API checks it in `api/auth.py`:
 
 - the seal must match one of Supabase's published public keys (ES256 or RS256 only);
 - the pass must not have expired;
@@ -55,7 +55,7 @@ Next.js because FastAPI is already the server; Next.js would add a second server
 **Supabase Auth** was quick to set up, uses standard JWTs that FastAPI can check without a special
 library, and publishes its public keys. That means the API never needs a secret to verify a sign-in. I
 first tried Clerk, which offers the same features, but its sign-up failed for me. Because the API only
-depends on standard JWT checks, switching provider later would only touch `auth.py` and the sign-in
+depends on standard JWT checks, switching provider later would only touch `api/auth.py` and the sign-in
 page.
 
 **Taking identity from the token, not the request** is the important part. It's what makes it safe to
@@ -88,7 +88,7 @@ server; several servers would need a shared limit.
 
 ## Where to find it
 
-- Sign-in check: `auth.py`; the protected routes: `server.py`
+- Sign-in check: `api/auth.py`; the protected routes: `api/server.py`
 - Web app: `frontend/src/` (`App.tsx`, `components/Workspace.tsx`, `components/ChatView.tsx`,
   `components/Sidebar.tsx`, `components/MyData.tsx`, `components/DependencyGraph.tsx`, `lib/api.ts`)
 - Settings: `SUPABASE_URL`, `ALLOWED_ORIGINS`, `CHAT_MESSAGES_PER_MINUTE` in `.env`; the web app's own

@@ -7,12 +7,12 @@ routes list the user's past chats, reopen an old chat, show the saved checklists
 healthy. A few more give users their data rights: see everything Navi remembers about them, download it, or delete it.
 
 Every route except /health needs the user to be signed in. The user's identity always comes from their Supabase
-sign-in pass (see auth.py), never from anything the browser says, so one user can never reach another user's data.
+sign-in pass (see api/auth.py), never from anything the browser says, so one user can never reach another user's data.
 The server also checks every request: messages can't be too long, a user can't send too many messages a minute, and
 only the website's own address may call it from a browser.
 
 HOW TO RUN IT
-    uvicorn server:app --reload --port 8000
+    uvicorn api.server:app --reload --port 8000
 """
 
 import json
@@ -35,7 +35,7 @@ from agent.memory import LongTermMemory
 from agent.memory.history import session_transcript
 from agent.storage import store
 from agent.storage.database import get_db
-from auth import CurrentUser, current_user
+from api.auth import CurrentUser, current_user
 
 logger = logging.getLogger(__name__)
 

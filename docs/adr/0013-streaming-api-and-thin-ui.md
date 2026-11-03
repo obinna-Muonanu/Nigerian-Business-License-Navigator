@@ -65,5 +65,5 @@ it, or run it with `--reload`.
 
 ## Where to find it
 
-The API is `server.py`. `stream_turn` and `AgentPool` are in `agent/core.py`. The UI is
+The API is `api/server.py`. `stream_turn` and `AgentPool` are in `agent/core.py`. The UI is
 `ui/streamlit_app.py`, and the CLI is `main_agent.py`.

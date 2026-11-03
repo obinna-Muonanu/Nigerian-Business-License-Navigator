@@ -27,7 +27,9 @@ agent/
   hooks/         the policy layer                           (ADR 0009)
 ingestion/       build the graph and the vector index (offline)
 evaluation/      datasets, judge, runner, results           (ADR 0017)
-server.py · auth.py · main_agent.py · frontend/ (React web app, ADR 0019)
+api/             the web API: server.py (routes) and auth.py (sign-in check)
+tests/           fast unit tests, run on every push by .github/workflows/tests.yml
+main_agent.py · frontend/ (React web app, ADR 0019) · pyproject.toml
 ```
 
 The tools are deliberately thin. Each one reads the user's state and calls a service in `knowledge/`

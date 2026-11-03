@@ -15,4 +15,7 @@ data/graph/embeddings_cache.json
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
+*.egg-info/
+build/
 .env.example

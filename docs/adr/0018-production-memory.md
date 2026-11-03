@@ -132,7 +132,7 @@ migration 2.
 - Episodic notes: `agent/memory/summarizer.py`; size-based summary: `agent/memory/conversation_manager.py`
 - New tool: `agent/tools/add_business.py`; the `business` input on the other tools
 - Memory block and multi-business rules: `render_memory_block` and "MORE THAN ONE BUSINESS" in `agent/prompts.py`
-- Data-rights endpoints: `server.py`; retention job: `scripts/purge_old_data.py`
+- Data-rights endpoints: `api/server.py`; retention job: `scripts/purge_old_data.py`
 
 ## Update (2026-11-03): retiring businesses the user no longer uses
 
