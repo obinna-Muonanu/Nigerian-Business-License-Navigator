@@ -142,7 +142,9 @@ User message ─► 1. Input guard ─► 2. Build context ─► 3. Agent loop 
 ```
 
 1. **Input guard.** Detects whether *this* message is English or Pidgin. Masks NIN/BVN-style and card
-   numbers before the model sees them. Flags prompt-injection attempts and requests for a human.
+   numbers before the model sees them. Warns the model if the Bedrock Guardrail flagged a possible attack, and
+   adds short reminders of the rules the model tends to skip: search first, save facts, and offer a person to a
+   frustrated user.
 2. **Build the context:**
    - the system prompt and tool list (identical for every user, so Bedrock caches them);
    - a short **memory block** (what we already know about this user);
@@ -170,15 +172,17 @@ User message ─► 1. Input guard ─► 2. Build context ─► 3. Agent loop 
 
 ### 2.4 Memory
 
-Navi has four kinds of memory, each with its own job, size and level of trust
-([ADR 0018](docs/adr/0018-production-memory.md)):
+Navi has working memory, short-term memory and long-term memory. Long-term memory comes in two types: confirmed
+facts, and episodic notes about past chats. Each one has its own job, size and level of trust
+([ADR 0007](docs/adr/0007-memory-types.md), [ADR 0018](docs/adr/0018-production-memory.md)):
 
-| | Working memory | Short-term memory | Long-term memory | Episodic memory |
+| | Working memory | Short-term memory | Long-term: confirmed facts | Long-term: episodic notes |
 |---|---|---|---|---|
 | **Question it answers** | What am I looking at right now? | What have we said in this chat? | What do I know for sure about this user? | What happened last time? |
 | **Holds** | Rules, memory block, recent messages, fresh tool results | The whole chat and any action waiting for a "yes" | Each business's confirmed facts and finished steps, checklists, reminders | A three-line note per past chat |
 | **Lives for** | One reply | One chat | Months (until the retention limit) | Months (the last 3 are shown) |
 | **Stored in** | The model's context window | `chat_*` tables | `businesses`, `profile_facts`, `progress`, ... | `episodes` |
+| **Updated** | Every model call | Every message | As soon as a fact or step is recorded | Every 4 turns, and when the chat ends, in the background |
 | **Kept small by** | Old tool results trimmed after each turn, prompt caching | At ~24,000 tokens, the last 5 turns stay word for word and older ones are summarised | Only a fixed list of business fields can be stored | Three lines each |
 
 The rules that make it production-ready:
@@ -209,8 +213,8 @@ Each decision is explained in full (the problem, the options, why, and the trade
 | **Graph and vectors in one Neo4j** | One query can use both; citations come from the graph; a fair baseline ([0003](docs/adr/0003-graph-and-vectors-in-one-neo4j.md)) |
 | **LLM extraction, then human review** | Fast to build, and the brief requires a hand check ([0004](docs/adr/0004-llm-extraction-then-human-review.md)) |
 | **Fixed graph queries first** | Predictable and safe; text-to-Cypher is a guarded, read-only extra ([0005](docs/adr/0005-fixed-graph-tools-first.md)) |
-| **The agent only writes to its own app database** | Neo4j stays read-only, so the knowledge can never be damaged ([0006](docs/adr/0006-sqlite-for-everything-the-agent-writes.md)) |
-| **Four kinds of memory, in Postgres for production** | Memory survives restarts, handles several businesses per user, and keeps facts apart from AI-written notes ([0018](docs/adr/0018-production-memory.md)) |
+| **The agent only writes to its own app database** | Neo4j stays read-only, so the knowledge can never be damaged ([0006](docs/adr/0006-app-database-separate-from-knowledge.md)) |
+| **Separate types of memory, in Postgres for production** | Memory survives restarts, handles several businesses per user, and keeps facts apart from AI-written notes ([0018](docs/adr/0018-production-memory.md)) |
 | **Rules enforced in code (hooks)** | A prompt can be ignored or bypassed; code cannot ([0009](docs/adr/0009-enforce-rules-in-code-with-hooks.md), [0010](docs/adr/0010-confirm-before-write.md)) |
 | **Claude Haiku for the agent, Sonnet for extraction and judging** | Low running cost, with accuracy where it matters ([0014](docs/adr/0014-model-choice-and-cost-control.md)) |
 
@@ -233,8 +237,9 @@ directly from the hand-reviewed graph, and any order that respects the prerequis
 
 ## 3. The results
 
-All results below come from the latest full run, on **3 November 2026**, using Claude Haiku 4.5. The reports
-are saved in `evaluation/results/`.
+All results below come from the latest run, on **4 November 2026**, using Claude Haiku 4.5. The reports are
+saved in `evaluation/results/`. The safety, tool and hand-off tests ran on the final prompt. The RAG and key
+experiment runs came just before one last small change, which only affects "why" questions.
 
 ### 3.1 Summary
 
@@ -242,9 +247,9 @@ are saved in `evaluation/results/`.
 |---|---|
 | **Unit tests** | **55 / 55 passed** |
 | **Safety cases** | **12 / 12 passed** |
-| **Tool scenarios** | **10 / 11 passed**. The Pidgin scenario failed (see section 3.4) |
-| **RAG questions** | Correctness **1.84 / 2**, citation **1.86 / 2**, "I don't know" handled correctly **2 / 2** |
-| **Asking for a person** | **13 / 20** (see section 3.4) |
+| **Tool scenarios** | **10 / 11 passed** (11 / 11 in the run before it; see section 3.4) |
+| **RAG questions** | Correctness **1.87 / 2**, citation **1.97 / 2**, "I don't know" handled correctly **2 / 2** |
+| **Asking for a person** | **20 / 20** in two runs in a row (requests 6/6, frustration 6/6, look-alikes 8/8) |
 | **Guardrail alone** | Caught **9 of 15** attacks, and wrongly flagged **3 of 25** normal questions |
 
 ### 3.2 The key experiment: does the graph help?
@@ -254,22 +259,27 @@ questions per type, and shown here as a percentage.
 
 | Question type | Correct: vector-only → GraphRAG | Citations: vector-only → GraphRAG | Valid order: vector-only → GraphRAG |
 |---|---|---|---|
-| **Simple lookup** ("What is the CAC fee?") | 90% → 90% | 100% → 100% | – |
-| **Multi-step** ("What do I need, and in what order?") | 50% → **70%** | 80% → **100%** | 3/5 → **5/5** |
-| **Progress** ("I've done X, what's left?") | 40% → **50%** | 50% → **90%** | 4/5 → **5/5** |
+| **Simple lookup** ("What is the CAC fee?") | 90% → 80% | 100% → 100% | – |
+| **Multi-step** ("What do I need, and in what order?") | 40% → **70%** | 90% → 80% | 3/5 → **5/5** |
+| **Progress** ("I've done X, what's left?") | 40% → **70%** | 50% → **90%** | 4/5 → **5/5** |
 
 **The "valid order" column was counted by code, not by the judge.** The code finds each step's name in the
 reply and checks that no step appears before something it depends on. The judge's own order scores were
-unreliable: it gave GraphRAG 2/5 in both rows, but some of its reasons described mistakes that aren't in the
-reply. The code can only check step names it finds, and the vector-only replies name far fewer steps, so
-their order scores are easier to earn.
+unreliable: it gave GraphRAG 3/5 in both rows, but on 3 November some of its reasons described mistakes that
+weren't in the reply. The code can only check step names it finds, and the vector-only replies name far fewer
+steps, so their order scores are easier to earn.
+
+**Two scores went against the graph, and both come from the judge.** The lookup drop is one question: the judge
+called the data protection impact assessment "invented", but the reviewed graph requires it for an online
+cosmetics store. On multi-step citations, the replies list their sources the same way as on 3 November, when
+they scored 100%. Those source lines name the document but not the section, so the judge can go either way.
 
 **Where the graph helped:**
 - **Multi-step questions.** The graph returns the connected list in one call. The vector-only version needed
-  5 to 7 searches on most of these questions and still missed many steps.
+  2 to 9 searches on these questions and still missed many steps.
 - **Citations on progress questions (50% → 90%).** The graph's steps come with their sources. Without the
   graph, the agent often answered without proper sources.
-- **Fewer searches.** 5 document searches instead of 33 across the 15 questions, and about 13% fewer input
+- **Fewer searches.** 5 document searches instead of 34 across the 15 questions, and about 18% fewer input
   tokens per turn.
 
 **Where it made no difference:**
@@ -280,9 +290,9 @@ shortens 20 to 30 step plans when writing the reply. The graph supplies every st
 the model writes the answer.
 
 **Limitations:** there are only 5 questions per type, so one answer moves a score by 10 to 20 points, and the
-27 October run gave different numbers (progress was 30% → 80%). The direction was the same in both runs:
-GraphRAG was never behind, and lookups were always equal. The gold answers also come from the same graph
-GraphRAG uses. The full write-up is in [evaluation/EXPERIMENT_REPORT.md](evaluation/EXPERIMENT_REPORT.md).
+27 October run gave different numbers (progress was 30% → 80%). In every run, GraphRAG was ahead on multi-step
+and progress correctness. The gold answers also come from the same graph GraphRAG uses. The full write-up is in
+[evaluation/EXPERIMENT_REPORT.md](evaluation/EXPERIMENT_REPORT.md).
 
 ### 3.3 Problems found and fixed during testing
 
@@ -296,6 +306,10 @@ Testing found real bugs, which were fixed before the final run:
 | The agent called covered topics "out of scope" without searching | A per-message "search before saying you don't know" reminder |
 | The agent held back "what's left" while asking to record progress | It now shows the answer at once and asks for the "yes" at the end |
 | One reply claimed a blocked save had happened | A visible correction is added, and every tool scenario now checks for this |
+| Navi missed a fact said indirectly in Pidgin ("I never register anything yet") and asked for it again | A reminder on every message to save facts, including indirect ones. Tested 3/3 |
+| Navi often didn't offer a person to a frustrated user | A reminder on every message to end with that offer. Frustration went from 2/6 to 6/6 |
+| Navi said "I don't have that" on a topic it covers (staff medical tests) | If a search finds nothing, Navi now searches once more with different words. The question then passed 3/3, but the first search found the answer each time, so the second search hasn't been seen working yet |
+| Navi didn't answer "why" questions that named steps loosely ("the inspection") | It now picks the likely steps for the business, calls `explain_path` and says which steps it took them to mean. Tested 3/3 |
 
 ### 3.4 Known weak spots (not fixed yet)
 
@@ -303,10 +317,8 @@ The latest run found these problems:
 
 | Problem | What happens | Result |
 |---|---|---|
-| **Navi can miss a fact in a Pidgin message** | The user said "I never register anything yet", but Navi didn't save it and asked again, so the checklist came a turn later | Tool scenario 7 failed in both runs on 3 November |
-| **Navi doesn't always offer a person when the user is frustrated** | It apologises and carries on, without offering a human adviser | 2 of 6 frustrated messages got an offer (5 of 6 in the earlier run) |
-| **A correct answer can fall just below the search cut-off** | "What medical tests do production staff need?" got "I don't have that", because the closest passage scored just under 0.70 on the words Navi searched with. Similar wording scored 0.713 | 1 of 31 RAG questions |
-| **Navi sometimes uses the wrong tool for "why" questions** | "Why is the inspection needed before registration?" got "I don't have that", when the graph holds the reason | Seen once in the hand-off test |
+| **Navi can say "I've marked it as done" before the user says yes** | The save is blocked, so nothing changes, and a visible correction appears under the reply. The wording is still wrong | Tool scenario 3 failed in 1 of the 2 runs on 4 November |
+| **Navi can name the wrong regulator** | One checklist said "If NAFDAC says your business is of major importance" where it should say NDPC | Seen once in the key experiment |
 | **Replies are slow when the server is far from the database** | The same lookup questions took about 7 seconds with a local database and 15 to 17 seconds with Neon from a laptop. Each reply needs many database calls, and each call has to travel to Neon and back | Keep the server and Neon in the same region when deploying. Not yet measured on a live server |
 
 ---
@@ -385,6 +397,8 @@ python main_agent.py --user ada-ibadan       # or chat in the terminal, no serve
 ```powershell
 pytest -q        # 55 unit tests, in seconds, with no AWS, Neo4j or real database needed
 ```
+Why they're set up this way is explained in [ADR 0022](docs/adr/0022-unit-tests-and-ci.md).
+
 The unit tests check Navi's own rules: the query guard, Pidgin detection and number masking, removing
 internal codes from replies, memory (one business per fact, no silent overwrites, no mixing between users),
 the sign-in check, the API's access rules, and the knowledge graph's standard names. They also run
@@ -434,6 +448,7 @@ frontend/              React + TypeScript + Tailwind web app (sign-in, chat, sid
 main_agent.py          command-line chat
 scripts/reset_local.py start from a clean slate (local SQLite only)
 scripts/purge_old_data.py delete users past the retention period (schedule daily)
+scripts/create_guardrail.py create the Bedrock Guardrail (run once)
 ```
 
 ### Data and compliance
@@ -461,5 +476,5 @@ scripts/purge_old_data.py delete users past the retention period (schedule daily
 | Document | What it covers |
 |---|---|
 | [evaluation/EXPERIMENT_REPORT.md](evaluation/EXPERIMENT_REPORT.md) | The full key-experiment write-up: setup, scoring, findings, limitations |
-| [docs/adr/](docs/adr/README.md) | 20 Architecture Decision Records: why each part was built the way it is |
+| [docs/adr/](docs/adr/README.md) | 22 Architecture Decision Records: why each part was built the way it is |
 | [Eraser diagrams](https://app.eraser.io/workspace/oZNSA2VMj1YHSIuG4kwz) | The system and agent architecture diagrams |
