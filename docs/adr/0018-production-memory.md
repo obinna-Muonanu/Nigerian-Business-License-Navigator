@@ -1,13 +1,13 @@
 # ADR 0018: Production memory: four kinds of memory, several businesses per user, kept in Postgres
 
-**Status:** Accepted · **Date:** 2026-11-01 · Replaces [0007](0007-two-tier-memory.md), and updates
-the storage engine in [0006](0006-sqlite-for-everything-the-agent-writes.md) and the summary trigger in
+**Status:** Accepted · **Date:** 2026-11-01 · Builds on [0007](0007-memory-types.md), and updates
+the storage engine in [0006](0006-app-database-separate-from-knowledge.md) and the summary trigger in
 [0008](0008-rolling-summary-conversation-manager.md)
 
 ## Context
 
-The two-tier memory from ADR 0007 worked well for the demo, but it had four problems that would hurt
-real users.
+My first memory design, with one profile per user and chats saved as files, worked well for the demo, but it had
+four problems that would hurt real users.
 
 The first was **where it lived**. Chats were saved as files and memory as a SQLite file, both on the
 server's own disk. On Render that disk is wiped on every restart or redeploy, so every user lost
@@ -118,8 +118,9 @@ is a little longer for users with several businesses, which costs a few more tok
 
 There are some new duties. Production needs a Postgres database and a daily run of
 `scripts/purge_old_data.py`, or at least a restart now and then, since the server also cleans up on
-start-up. The data-rights endpoints trust the `user_id` they're given, like the rest of the API, so
-**real sign-in must be added before going live**. Chats saved as files by older versions aren't
+start-up. When this was written, the data-rights endpoints trusted the `user_id` they were given, like the rest
+of the API. Real sign-in has since been added, and identity now comes from the sign-in pass
+([ADR 0019](0019-react-frontend-and-supabase-sign-in.md)). Chats saved as files by older versions aren't
 imported, because they were test data; profiles, checklists and progress are carried across by
 migration 2.
 
@@ -165,3 +166,27 @@ The clean-up runs with the user-level one, at server start-up and in `scripts/pu
 **My data** page labels inactive businesses, shows when each was last used, and states the rule in plain
 words. Code: `retire_unused_businesses` and `touch_business` in `agent/storage/store.py`; `resolve`,
 `add_business` and `_use` in `agent/memory/long_term.py`; `render_memory_block` in `agent/prompts.py`.
+
+## Update (2026-11-04): how the memory types fit together today
+
+Episodic memory is a **type of long-term memory**: both last across chats and are kept per user. The difference is
+trust. Confirmed facts are exact and plans are built from them. Episodic notes are written by an AI and only help
+Navi pick up the thread.
+
+| | Working memory | Short-term memory | Long-term: confirmed facts | Long-term: episodic notes |
+|---|---|---|---|---|
+| **Holds** | What the model sees on one reply | The current chat | Each business's facts, finished steps, checklist and reminders | A three-line note per chat |
+| **Lasts** | One model call | One chat | Across chats, until a retention limit | Across chats, until the user is deleted |
+| **Written by** | Built fresh for each call | Strands, after every message | The tools, such as `remember_profile`, when the user states a fact | The fast model, in the background |
+| **Updated** | Every call | Every message; summarised at about 24,000 tokens, keeping the last 5 turns | As soon as a fact or a step is recorded | Every 4 turns (`SUMMARY_EVERY_N_TURNS`), and when the user ends the chat |
+| **Stored in** | Nowhere; only in the request | `chat_sessions`, `chat_agents`, `chat_messages` | `businesses`, `profile_facts`, `fact_history`, `progress`, `checklists`, `reminders` | `episodes` |
+
+How long-term memory reaches the model: when a chat opens, the facts and the **last 3 episodic notes** (from
+`recent_episodes`) are turned into the memory block in the system prompt, placed after the cache marker. The block is
+built when the agent is built, so a note written during a chat isn't meant for that chat. It's for the next one.
+Each chat has one note, which is overwritten as that chat goes on. A chat with nothing useful in it saves no note, so
+small talk can't push out a useful one.
+
+A rule also moved closer to the moment it matters. The prompt has always said to save facts straight away, but the
+model sometimes missed a fact said indirectly, such as "I never register anything yet". The input guard now repeats
+that rule on every message ([ADR 0009](0009-enforce-rules-in-code-with-hooks.md)).
