@@ -33,6 +33,10 @@ It also type-checks and builds the website.
 I also moved the server into an `api/` folder and replaced `requirements.txt` with one **`pyproject.toml`**, which
 holds the packages and the test settings. `pip install -e ".[dev]"` installs everything.
 
+**Update (2026-11-04):** `uv.lock` was added for deployment. Railway's builder installs nothing from a
+`pyproject.toml` that has no lock file, so it needs this file. After changing the packages in `pyproject.toml`, run
+`uv lock` again and commit the result.
+
 ## Why I chose this
 
 The unit tests take seconds and cost nothing, so they can run all the time. They need no passwords, which means GitHub

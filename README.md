@@ -444,6 +444,7 @@ api/auth.py            checks the Supabase sign-in pass on every request
 tests/                 fast unit tests (pytest): safety checks, memory, sign-in, API access rules
 .github/workflows/     runs the unit tests and the website build on every push
 pyproject.toml         the project's dependencies and test settings
+uv.lock                the exact package versions, used by Railway when it builds the API
 frontend/              React + TypeScript + Tailwind web app (sign-in, chat, sidebar, My data)
 main_agent.py          command-line chat
 scripts/reset_local.py start from a clean slate (local SQLite only)
