@@ -56,7 +56,17 @@ CARD_NUMBER = re.compile(r"\b(?:\d[ -]?){13,19}\b")
 # about 30 tokens a turn.
 SEARCH_FIRST = ("For any question about registrations, licences, fees, documents, rules or timelines, call "
                 "vector_search BEFORE answering, and never say you do not have the information without "
-                "searching first. Answer direct questions directly; do not ask for the business type first.")
+                "searching first. If it returns NO_RELEVANT_DOCUMENTS, search once more with different words. For why "
+                "one step is needed before another, call explain_path in this same turn; if the steps are named "
+                "loosely, do not ask which ones: use the most likely ones for their business and say which you took. "
+                "Answer direct questions directly; do not ask for the business type first.")
+# The same idea for two more rules the system prompt already has but the model sometimes skipped: saving facts the
+# user only implied, and offering a person to someone who is frustrated. Testing found both were missed.
+SAVE_FACTS = ("Save every business fact in this message with remember_profile before you reply, including facts said "
+              "indirectly (\"I never register anything yet\" means cac_registered=no).")
+OFFER_PERSON = ("If this message shows the user is frustrated or upset with you, the last sentence of your reply must "
+                "offer to connect them with a human adviser.")
+TURN_REMINDERS = f"{SEARCH_FIRST} {SAVE_FACTS} {OFFER_PERSON}"
 
 
 def _is_pidgin(text: str) -> bool:
@@ -141,10 +151,10 @@ class InputGuardHook(HookProvider):
         # note also reminds the model to search in English, because the documents are in English.
         if language == "pidgin":
             add_policy_note(message, "this message is in Nigerian Pidgin: reply in Nigerian Pidgin, even if earlier "
-                                     "messages were in English. Write tool queries in English. " + SEARCH_FIRST)
+                                     "messages were in English. Write tool queries in English. " + TURN_REMINDERS)
         else:
             add_policy_note(message, "this message is in English: reply in clear English, even if earlier messages "
-                                     "in this conversation were in Pidgin. " + SEARCH_FIRST)
+                                     "in this conversation were in Pidgin. " + TURN_REMINDERS)
 
         # If the guardrail suspected a prompt-injection attack (core.stream_turn sets this just before the turn),
         # warn the model. It isn't told to refuse, because the filter also flags some innocent questions.
