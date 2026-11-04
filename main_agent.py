@@ -28,7 +28,7 @@ def _new_session_id() -> str:
 async def chat_loop(user_id: str, session_id: str, mode: str) -> None:
     """Keep reading lines from the keyboard and answering them until the user quits."""
     # The command line builds the agent directly, with no server and no pool. That's handy for testing tools
-    # and memory without starting FastAPI and Streamlit, and it still uses the same build_agent and
+    # and memory without starting the API and the website, and it still uses the same build_agent and
     # stream_turn as the server, so it behaves exactly the same.
     agent = build_agent(user_id, session_id, mode)
     print(f"User {user_id} | session {session_id} | mode {mode}")

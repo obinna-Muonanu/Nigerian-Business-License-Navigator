@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # This tells Pydantic how to load the settings. It reads the .env file in the project folder, but a
     # real environment variable still wins, so you can override one setting for a single run. Unrelated
-    # variables in .env (like API_URL, which only Streamlit uses) are ignored rather than treated as
+    # variables in .env (ones the app doesn't use) are ignored rather than treated as
     # errors. And once loaded, the settings are frozen, so no part of the app can change one by accident.
     model_config = SettingsConfigDict(
         env_file=ROOT / ".env",
