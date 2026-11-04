@@ -1,6 +1,6 @@
 # ADR 0017: Evaluate with a fair baseline, gold answers from the reviewed graph, a judge and hard checks
 
-**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (run-to-run noise, and the judge's order verdicts)
+**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (run-to-run noise, and the judge's order verdicts) and 2026-11-04 (more judge mistakes, and repeat checks)
 
 ## Context
 
@@ -124,3 +124,17 @@ it depends on in the reviewed graph. The code found **no order mistakes in any o
 
 Also, the "about 40% fewer input tokens" reported earlier doesn't match the saved numbers. Adding them up the same way
 for both runs gives 19% on 27 October and 13% on 3 November.
+
+## Update (2026-11-04): read the judge's reasons, and test fixes more than once
+
+The 4 November run confirmed the points above:
+- **Order.** The judge gave GraphRAG 3/5 in both checklist categories. The code check again found no order mistakes
+  in any of the 10 GraphRAG checklists. It is still a one-off check, not part of `run_eval.py`.
+- **A false "invented".** GraphRAG's lookup score fell from 90% to 80% because of one question. The judge called the
+  data protection impact assessment invented, but the reviewed graph requires that step for an online cosmetics store.
+- **Inconsistent citation grades.** Multi-step citations fell from 100% to 80%, with source lines written the same
+  way as on 3 November. Those lines name the document but not the section, so the judge can go either way.
+
+Prompt fixes are now tested on the failing message at least 3 times, and the full suites are run again afterwards.
+This caught a fix that looked right but failed 3/3. Unit tests can't check this, because they don't call the model.
+Only the latest reports are kept in `evaluation/results/`, and older ones stay in git history where they were committed.

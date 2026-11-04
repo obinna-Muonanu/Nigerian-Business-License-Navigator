@@ -90,3 +90,8 @@ suite should be re-run after any prompt change, because Navi's own rules are par
 - The warning attached to flagged messages: `agent/hooks/input_guard.py`
 - The rules in the prompt: the SECURITY section of `agent/prompts.py`
 - Safety tests: `evaluation/datasets/safety_cases.json` (run with `python -m evaluation.run_eval --suite safety`)
+
+## Update (2026-11-04)
+
+The prompt and the per-message reminders changed, so the safety suite was run again, as this ADR asks. It passed
+**12 / 12**. The guardrail itself didn't change, so its measured results above weren't re-run.

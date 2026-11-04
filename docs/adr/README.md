@@ -19,7 +19,8 @@ Every ADR follows the same order, so they are quick to read:
 | **Consequences** | What I gained, and the trade-offs I accepted |
 | **Where to find it** | The files that implement it |
 
-Every ADR has the status "Accepted", because they all describe what was actually built.
+Every ADR has the status "Accepted", because each describes a decision still in use. When a decision changes, its
+ADR is rewritten or given a dated "Update" section, and the status line records the date.
 
 ## The decisions
 
@@ -32,32 +33,31 @@ Every ADR has the status "Accepted", because they all describe what was actually
 | [0004](0004-llm-extraction-then-human-review.md) | Build the graph with an LLM, then check it by hand |
 | [0021](0021-standard-names-in-the-graph.md) | Give every regulator and required document one standard name |
 | [0005](0005-fixed-graph-tools-first.md) | Use fixed graph queries first; text-to-Cypher only as a guarded extra |
-| [0006](0006-sqlite-for-everything-the-agent-writes.md) | Store everything the agent writes in SQLite, separate from the knowledge |
+| [0006](0006-app-database-separate-from-knowledge.md) | Store everything the agent writes in its own app database, separate from the knowledge |
 
 ### Memory and safety
 | # | Decision |
 |---|---|
-| [0007](0007-two-tier-memory.md) | Two kinds of memory: short-term per session, long-term per user (replaced by 0018) |
-| [0008](0008-rolling-summary-conversation-manager.md) | Our own conversation manager: summarise older messages and keep recent ones word for word (now: at ~24,000 tokens, keep the last 5 turns; see 0018) |
+| [0007](0007-memory-types.md) | Memory types: working, short-term and long-term (confirmed facts and episodic notes) |
+| [0018](0018-production-memory.md) | Production memory: several businesses per user, fact sources, retention, kept in Postgres |
+| [0008](0008-rolling-summary-conversation-manager.md) | Our own conversation manager: summarise older messages and keep recent ones word for word |
 | [0009](0009-enforce-rules-in-code-with-hooks.md) | Enforce the brief's rules in code (hooks), not only in the prompt |
 | [0010](0010-confirm-before-write.md) | How "confirm before acting" works |
 | [0011](0011-footnote-citations-and-hidden-ids.md) | Cite sources as numbered footnotes, and never show internal IDs |
 | [0012](0012-reply-language-follows-each-message.md) | Reply in the language of each message |
-| [0018](0018-production-memory.md) | Production memory: four kinds of memory, several businesses per user, kept in Postgres |
 
 ### Delivery, cost and quality
 | # | Decision |
 |---|---|
-| [0013](0013-streaming-api-and-thin-ui.md) | A streaming FastAPI server, with Streamlit as a thin client (client replaced by 0019) |
+| [0013](0013-streaming-api-and-thin-ui.md) | A streaming FastAPI server, with a thin web client |
 | [0019](0019-react-frontend-and-supabase-sign-in.md) | A React + TypeScript web app, with Supabase sign-in checked by the API |
 | [0020](0020-prompt-injection-defence.md) | Defend against prompt injection in layers, with a Bedrock Guardrail that flags rather than blocks |
 | [0014](0014-model-choice-and-cost-control.md) | Claude Haiku for the agent, Sonnet for extraction and judging, plus caching |
 | [0015](0015-configuration-with-pydantic-settings.md) | Read configuration through one validated Pydantic settings model |
 | [0016](0016-modular-layout-one-tool-per-file.md) | A modular code layout, with one file per tool |
 | [0017](0017-how-we-evaluate.md) | Evaluate with a fair baseline, gold answers from the reviewed graph, a judge and hard checks |
+| [0022](0022-unit-tests-and-ci.md) | Fast unit tests that run on every push, and one project file |
 
 ## Adding a new ADR
 
 Copy any existing file, give it the next number, keep it short, and add it to the table above.
-Never edit an old decision to say something different: write a new ADR that replaces it, and mark
-the old one "Replaced by 00XX".

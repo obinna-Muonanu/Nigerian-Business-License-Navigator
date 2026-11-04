@@ -20,16 +20,18 @@ agent/
   schemas.py     shared vocabularies and data models
   core.py        builds the agent and streams one turn
   llm/           Bedrock models and embeddings              (ADR 0014)
-  storage/       SQLite and Neo4j clients                   (ADR 0003, 0006)
+  output_filter.py  removes internal IDs while streaming    (ADR 0011)
+  storage/       app database (SQLite or Postgres), chat history, Neo4j  (ADR 0003, 0006, 0018)
   knowledge/     graph planning, vector search, Cypher guard, citations
-  memory/        short-term, long-term, summaries           (ADR 0007, 0008)
+  memory/        short-term, long-term, episodic notes, rolling summary  (ADR 0008, 0018)
   tools/         ONE FILE PER TOOL + __init__.py registry   (ADR 0002)
   hooks/         the policy layer                           (ADR 0009)
 ingestion/       build the graph and the vector index (offline)
 evaluation/      datasets, judge, runner, results           (ADR 0017)
 api/             the web API: server.py (routes) and auth.py (sign-in check)
-tests/           fast unit tests, run on every push by .github/workflows/tests.yml
-main_agent.py · frontend/ (React web app, ADR 0019) · pyproject.toml
+tests/           fast unit tests, run on every push by .github/workflows/tests.yml  (ADR 0022)
+scripts/         set up the guardrail, delete old data, reset a local setup
+main_agent.py · frontend/ (React web app, ADR 0019) · pyproject.toml (ADR 0022)
 ```
 
 The tools are deliberately thin. Each one reads the user's state and calls a service in `knowledge/`

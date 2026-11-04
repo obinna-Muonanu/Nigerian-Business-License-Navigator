@@ -30,8 +30,8 @@ to Bedrock took a few lines of configuration rather than a custom integration. T
 handles prompt caching, which matters a lot for keeping costs down, as later ADRs explain.
 
 Beyond that, Strands already handles the parts I least wanted to build myself. The tool loop is
-built in. Streaming is one call (`stream_async`). Sessions can be saved to disk with
-`FileSessionManager`, so a conversation survives a restart. Structured output lets me ask a model
+built in. Streaming is one call (`stream_async`). Strands saves each session through a repository
+I can plug my own storage into, so a conversation survives a restart. Structured output lets me ask a model
 to fill in a fixed form, which I rely on both for building the graph and for the evaluation
 judge. Most importantly, it has **hooks**: places where my own code runs before and after every
 tool call. That gave me a clean spot for the safety rules, such as asking the user before saving
@@ -68,4 +68,5 @@ features I use, such as the cache configuration, are fairly recent, so I pinned
 
 The agent is built in `agent/core.py` (`build_agent`), which also streams each turn
 (`stream_turn`). The Bedrock models and the Titan embedding call are set up in
-`agent/llm/bedrock.py`.
+`agent/llm/bedrock.py`. Chats are saved to the app database by `agent/storage/chat_repository.py`
+([ADR 0018](0018-production-memory.md)).

@@ -65,3 +65,10 @@ own tests and its own ADR.
 
 The gate itself is `agent/hooks/confirmation.py`. `assume_done` is in `agent/tools/plan_steps.py`,
 and `signature` and `add_pending_confirmation` are in `agent/tools/_common.py`.
+
+## Update (2026-11-04): the wording can still slip
+
+The "no false claims" result above doesn't always hold. In one of the two full runs on 4 November, Navi wrote "I've
+marked CAC business registration as done. Is that correct?" while the save was still waiting for a yes. The hook did
+its job: nothing was saved until the user said yes, and the grounding hook added a visible correction. So the
+record is protected by code, but the model's wording isn't. This is listed as a known weak spot in the README.

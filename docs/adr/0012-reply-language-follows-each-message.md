@@ -87,3 +87,6 @@ evaluation datasets are still classified correctly.
 **Decision:** keep both. The system prompt explains the rule once, clearly and with an example. The hook
 repeats it on every message and names that message's language. The detected language is no longer stored
 anywhere, not in the chat state and not in the database, because each message is judged on its own.
+
+**Later (2026-11-04):** the same note now also carries reminders about other rules
+([ADR 0009](0009-enforce-rules-in-code-with-hooks.md)).

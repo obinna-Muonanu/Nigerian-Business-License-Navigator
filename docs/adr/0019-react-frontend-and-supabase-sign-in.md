@@ -93,3 +93,8 @@ server; several servers would need a shared limit.
   `components/Sidebar.tsx`, `components/MyData.tsx`, `lib/api.ts`)
 - Settings: `SUPABASE_URL`, `ALLOWED_ORIGINS`, `CHAT_MESSAGES_PER_MINUTE` in `.env`; the web app's own
   settings in `frontend/.env.local` (see `frontend/.env.example`)
+
+## Update (2026-11-04)
+
+The "Show the step diagram" button was removed from the website on 3 November. The ordered checklist and the "why"
+answers from `explain_path` still give that information in words.

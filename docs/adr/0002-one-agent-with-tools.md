@@ -14,18 +14,19 @@ tidy on a diagram, so I had to decide whether this project actually needed it.
 
 ## Decision
 
-I used **one** Strands agent with **11 tools**, grouped by what they are for:
+I used **one** Strands agent with **12 tools**, grouped by what they are for. It started with 11;
+`add_business` was added when one user could have several businesses ([ADR 0018](0018-production-memory.md)).
 
 | Group | Tools | What they do |
 |---|---|---|
 | Retrieve | `vector_search`, `get_requirements`, `get_dependencies`, `explain_path`, `query_graph` | Read the documents and the graph |
 | Plan | `plan_steps` | Build the ordered checklist |
 | Act (needs a "yes") | `save_checklist`, `update_progress`, `set_reminder` | Change the user's records |
-| Escalate and remember | `handoff_to_human`, `remember_profile` | Pass to a person, or remember a fact |
+| Escalate and remember | `handoff_to_human`, `remember_profile`, `add_business` | Pass to a person, remember a fact, or add another business |
 
 ## Why I chose this
 
-Eleven tools is a comfortable number for one model to choose from. At this size there was no sign
+Twelve tools is a comfortable number for one model to choose from. At this size there was no sign
 that the model was confused about which tool to pick, so there was nothing for extra agents to fix.
 
 What extra agents would have added is cost and delay. Every hand-off between agents is another model

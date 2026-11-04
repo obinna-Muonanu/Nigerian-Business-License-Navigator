@@ -66,3 +66,16 @@ is a single line in `.env` (`AGENT_MODEL_ID`).
 
 The models, caching and token cap are set up in `agent/llm/bedrock.py`, and compaction is in
 `agent/hooks/compaction.py`. The model IDs live in `.env`.
+
+## Update (2026-11-04)
+
+**Where the cache markers are.** The request goes in this order: tools, system prompt (fixed rules, then the memory
+block), then the conversation. There are three markers: after the tools, after the fixed rules, and at the end of
+the conversation. The memory block sits after the second marker because it's different for each user.
+
+**Haiku doesn't pass every test any more.** "Haiku passed every tool and safety test" was true when this was
+written. The latest runs give 12/12 on safety and 10/11 on tools (11/11 in the run before). The miss was a wording
+slip that the hooks caught ([ADR 0010](0010-confirm-before-write.md)).
+
+**The per-message reminders cost a little more.** They are sent with each new message, after the cached rules
+([ADR 0009](0009-enforce-rules-in-code-with-hooks.md)).

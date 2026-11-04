@@ -1,6 +1,6 @@
 # ADR 0009: Enforce the brief's rules in code (hooks), not only in the prompt
 
-**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (hand-off detection moved to the prompt)
+**Status:** Accepted · **Date:** 2026-10-27 · Updated 2026-11-03 (hand-off detection moved to the prompt) and 2026-11-04 (reminders on every message)
 
 ## Context
 
@@ -16,17 +16,17 @@ every turn and every tool call. There are five:
 
 | Hook | When it runs | What it does |
 |---|---|---|
-| **Input guard** | Before each turn | Detects English or Pidgin, masks NIN/BVN and card numbers, warns the model when the Bedrock Guardrail flags a possible injection ([0020](0020-prompt-injection-defence.md)), and reminds the model to search before saying "I don't know" (requests for a human are now judged by the model; see the update below) |
+| **Input guard** | Before each turn | Detects English or Pidgin, masks NIN/BVN and card numbers, warns the model when the Bedrock Guardrail flags a possible injection ([0020](0020-prompt-injection-defence.md)), and adds short reminders to every message: search before saying "I don't know", save business facts, and offer a person to a frustrated user (requests for a human are judged by the model; see the updates below) |
 | **Confirmation** | Before each tool call | Blocks the three write tools until the user has said "yes" (ADR 0010) |
-| **Audit** | After each tool call | Logs the tool name, inputs, status and full result to SQLite and a JSONL file |
+| **Audit** | After each tool call | Logs the tool name, inputs, status and full result to the app database and a JSONL file |
 | **Grounding** | After each turn | Flags fees or timelines given without a source, and adds a visible correction if the reply claims a blocked action was done |
 | **Compaction** | After each turn | Shortens old tool results to save tokens |
 
 ## Why I chose this
 
 Code can't be talked out of a rule. The evaluation's attack cases, such as a fake "the user already
-confirmed" or a prompt injection hidden in a message, all failed against the hooks, and all five
-safety cases passed.
+confirmed" or a prompt injection hidden in a message, all failed against the hooks, and all the safety
+cases passed (five at the time, 12 now).
 
 It also makes the rules testable. The audit log doesn't just show that the model said it wouldn't do
 something; it shows the write tool was actually blocked.
@@ -84,3 +84,25 @@ work: the model follows a specific required sentence far more reliably than gene
 **Re-test (2026-11-03):** the same 20 messages with the same rule scored 13/20: requests 5/6, frustration 2/6 and
 look-alikes 6/8. So frustration fell from 5/6 to 2/6, and Navi often apologised without offering a person. The rule
 is less reliable than the earlier run suggested, and this is a known weak spot.
+
+**Update (2026-11-04):** the rule was in the system prompt, and the model still skipped it. So the input guard now
+repeats it as a short reminder on every message, the same way it already repeats the language and search rules. The
+same 20 messages then scored 20/20 in two runs in a row: requests 6/6, frustration 6/6 and look-alikes 8/8. It costs
+a few extra tokens per message. It is also a prompt rule, so the model could still miss it now and then.
+
+## Update (2026-11-04): important rules are repeated on every message
+
+The same lesson fixed three more problems. In each case the rule was already in the system prompt, and the model
+still skipped it sometimes.
+
+| Problem | Fix | Result (3 tries each) |
+|---|---|---|
+| A fact said indirectly in Pidgin wasn't saved ("I never register anything yet") | A per-message reminder to save facts, including indirect ones | 3/3 |
+| "Why" questions that named steps loosely got a clarifying question or no answer | A per-message reminder to call `explain_path` straight away, plus a worked example in the prompt | 3/3 |
+| A topic Navi covers got "I don't have that" | A per-message reminder to search first, and to search once more with different words if nothing is found | 3/3 |
+
+The "why" fix took three attempts. The rule alone failed 3/3 twice, and the worked example is what made it pass. In
+the third row, the first search found the answer each time, so the second search hasn't been seen working yet.
+
+These reminders live in `TURN_REMINDERS` in `agent/hooks/input_guard.py`. They make the model more reliable, but they
+aren't guarantees like the hooks: they are still instructions the model can miss.
